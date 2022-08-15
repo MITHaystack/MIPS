@@ -1,9 +1,7 @@
 .. -*- mode: rst -*-
 
-|GitHub|_ |PyPI|_ |Conda|_ |CI|_
-
-|MIT Incoherent Scatter Performance Simulator (MIPS)|
-=====================================================
+MIT Incoherent Scatter Performance Simulator (MIPS)
+===================================================
 
 
 MIPS is a tool for simulating the performance of incoherent scatter radar
