@@ -88,10 +88,10 @@ geometry.
 
 cd examples
 
-python mips_performance_sim.py
-python mips_zenith_comparison.py
-python mips_misa_mapping.py
-python mips_esicat3d_mapping.py
+   * python mips_performance_sim.py
+   * python mips_zenith_comparison.py
+   * python mips_misa_mapping.py
+   * python mips_esicat3d_mapping.py
 
 It is recommended that you discuss applications with the development team
 prior to use in any publications.
