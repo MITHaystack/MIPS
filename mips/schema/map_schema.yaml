@@ -1,0 +1,37 @@
+sim: any(include('simobj'),list(include('simobj')))
+map: any(include('mapobj'),list(include('mapobj')))
+filenames: any(str,list(str()),required=False)
+
+---
+simobj:
+  tname: str()
+  tx_sites: list(str())
+  tx_radars: list(str())
+  rx_sites: list(str())
+  rx_radars: list(str())
+  pair_list: any(enum('cross','self','mimo'),list())
+  plasma_parameter_errors: bool()
+  ionosphere: include('ionosphereobj',required=False)
+  tmax: num(min=0,required=False)
+  ngrid: int(min=0,required=False)
+
+ionosphereobj:
+  use_iri: bool()
+  iri_type: str(required=False)
+  iri_time: timestamp(required=False)
+  alt_m: num(min=0, required=False)
+  N_e: num(min=0, required=False)
+  T_e: num(min=0,required=False)
+  T_i: num(min=0,required=False)
+
+mapobj:
+  map_parameters: list(str())
+  dval_max: list(num())
+  map_zoom: num()
+  range_contours: list(num())
+  map_fname: str(required=False)
+  map_type: str()
+  annotate: bool(required=False)
+  legend: bool(required=False)
+  vmin: num(required=False)
+  vmax: num(required=False)
