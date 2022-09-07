@@ -1,4 +1,12 @@
-#!/usr/bin/env python
+"""
+    MIPS ISR Performance estimation library.
+
+    This is the primary library for computation of IS radar performance based
+    on a radar configuration, model ionosphere, and model configuration
+    parameters. An IRI2016 interface is used to provide access to realistic
+    ionospheric parameters.
+
+"""
 
 import scipy.constants as sc
 import scipy.interpolate
@@ -13,7 +21,7 @@ import madrigalWeb.madrigalWeb
 import ISRSpectrum
 import iri2016.base as iri2016_base  # pip install - written by Michael Hirsch; avoiding name conflict with old method
 
-version_str = "V1.0 $Id: isr_performance.py 16968 2021-10-27 17:38:07Z brideout $"
+version_str = "MIPS V1.0"
 
 AMUDICT = {16: "O+", 30: "NO+", 28: "N2+", 32: "O2+", 14: "N+", 1: "H+", 4: "He+"}
 

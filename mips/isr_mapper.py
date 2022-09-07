@@ -2,8 +2,6 @@
 """
     ISR Mapping library
 
-    $Id: isr_mapper.py 16966 2021-10-27 14:07:26Z brideout $
-
     This library provides helper functions to enable easy map generation for IS
     radar performance assesement using the MIPS model.
 

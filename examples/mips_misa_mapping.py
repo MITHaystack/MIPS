@@ -2,8 +2,6 @@
 """
     mips_misa_mapping.py
 
-    $Id$
-
     This is a set of simulations for mapping the spatial performance of
     with the MIPS model, targeted to the Millstone site and radar.
 

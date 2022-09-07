@@ -2,8 +2,6 @@
 """
     mips_eiscat3d_mapping.py
 
-    $Id$
-
     This is a set of simulations for mapping the spatial performance of
     radars and radar networks with the MIPS model, targeted to the EISCAT 3D
     radar system.

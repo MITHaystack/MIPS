@@ -93,12 +93,13 @@ cd examples
    * python mips_misa_mapping.py
    * python mips_esicat3d_mapping.py
 
-It is recommended that you discuss applications with the development team
+It is recommended that you discuss applications of MIPS with the development team
 prior to use in any publications.
 
 
 Acknowledgments
 ===============
 
-This work was supported by the National Science Foundation under the Geospace Facilities program.
-We are grateful for the support that made this development possible.
+This work was supported by the National Science Foundation under the Geospace
+Facilities program. We are grateful for the support that made this development
+possible.

@@ -1,8 +1,6 @@
 """
     isr_performance_sim.py
 
-    $Id: isr_performance_sim.py 16966 2021-10-27 14:07:26Z brideout $
-
     These are basic IS radar performance evaluations and examples for the MIPS
     model.
 

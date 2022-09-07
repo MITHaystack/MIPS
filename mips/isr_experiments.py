@@ -1,14 +1,14 @@
 """
     ISR Experiment Description Library
 
-    $Id$
-
     These methods allow for the loading of an experiment description in YAML and
     the simulation of these experiments in time and space using MIPS. The
     experiment description allows for sequencing basic operational behaviors for
     each radar system in the experiment. Interleaved modes are supported which
     allow for different simultaneous measurements to be simulated. Basic
     routines are provided to support visualization of the results.
+
+    This is currently under development.
 
 """
 

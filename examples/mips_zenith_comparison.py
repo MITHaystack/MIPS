@@ -1,8 +1,6 @@
 """
     mips_zenith_comparison.py
 
-    $Id$
-
     IS radar performance comparison to Millstone Zenith for the MIPS
     model.
 
