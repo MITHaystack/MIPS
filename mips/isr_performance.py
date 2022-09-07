@@ -21,7 +21,7 @@ import madrigalWeb.madrigalWeb
 import ISRSpectrum
 import iri2016.base as iri2016_base  # pip install - written by Michael Hirsch; avoiding name conflict with old method
 
-version_str = "MIPS V1.0"
+version_str = "MIPS V2.1.0"
 
 AMUDICT = {16: "O+", 30: "NO+", 28: "N2+", 32: "O2+", 14: "N+", 1: "H+", 4: "He+"}
 
