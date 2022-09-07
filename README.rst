@@ -11,7 +11,7 @@ and measurement statistics. The model is parameterized and allows
 straightforward optimization and design tradeoffs to be evaluated for IS radar
 performance metrics (e.g. SNR, measurement speed, estimation errors, etc).
 
-For incoherent scatter radar (ISR) applications studying the near-Earth space
+For incoherent scatter radar (IS radar) applications studying the near-Earth space
 environment, the instrument design parameter space for a modern Geospace
 Radar is very large. Particular areas of design freedom include transmitted
 waveforms (e.g. required bandwidth, center frequency, duty cycle), array
