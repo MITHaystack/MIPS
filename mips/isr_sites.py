@@ -1,8 +1,6 @@
 """
     isr_sites.py
 
-    $Id: isr_sites.py 16966 2021-10-27 14:07:26Z brideout $
-
     A dictionary containing sites by name as latitude, longitude, altitude. A
     helper function to enable building arrays from the dictionary.
 
