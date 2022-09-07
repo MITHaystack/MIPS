@@ -100,6 +100,6 @@ prior to use in any publications.
 Acknowledgments
 ===============
 
-This work was supported by the National Science Foundation under the Geospace
+This work was supported by the National Science Foundation under the AGS Geospace
 Facilities program. We are grateful for the support that made this development
 possible.
