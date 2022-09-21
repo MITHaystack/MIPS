@@ -9,11 +9,13 @@ simobj:
   tx_radars: list(str())
   rx_sites: list(str())
   rx_radars: list(str())
+  tx_pulse_length: num(required=False)
   pair_list: any(enum('cross','self','mimo'),list())
   plasma_parameter_errors: bool()
   ionosphere: include('ionosphereobj',required=False)
   tmax: num(min=0,required=False)
   ngrid: int(min=0,required=False)
+  extent: include('extentobj',required=False)
 
 ionosphereobj:
   use_iri: bool()
@@ -35,3 +37,9 @@ mapobj:
   legend: bool(required=False)
   vmin: num(required=False)
   vmax: num(required=False)
+
+extentobj:
+    center_lat: num()
+    center_lon: num()
+    delta_lat: num()
+    delta_lon: num()

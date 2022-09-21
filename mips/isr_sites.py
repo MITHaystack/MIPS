@@ -82,6 +82,33 @@ isr_sites = {# Existing IS Radar sites
              'andoya'      : (68.967142,15.872391,10.0,20.0,'planned E3D IS radar site','possible VHF phased array radar RX site ; approximate'),
 }
 
+radar_naming = ['ant_type', 'az_rotation', 'el_tilt', 'steering_mask', 'freq', 'tx_gain', 'rx_gain', 'tx_power', 'duty', 'tsys_type', 'xtra_tsys', 'notes']
+
+existing_radars_list = []
+for iname, itup in existing_radars.items():
+    cur_d = dict(name=iname)
+    for inum,ikey in enumerate(radar_naming):
+        cur_d[ikey] = itup[inum]
+    existing_radars_list.append(cur_d)
+
+concept_radars_list = []
+for iname, itup in concept_radars.items():
+    cur_d = dict(name=iname)
+    for inum,ikey in enumerate(radar_naming):
+        cur_d[ikey] = itup[inum]
+    concept_radars_list.append(cur_d)
+
+name_list = ['latitude', 'longitude', 'altitude', 'elevation_mask', 'description', 'notes']
+isr_site_list = []
+
+for iname, itup in isr_sites.items():
+    cur_d = dict(name=iname)
+    for inum,ikey in enumerate(name_list):
+        cur_d[ikey] = itup[inum]
+    isr_site_list.append(cur_d)
+
+
+
 def build_site_lists(sites):
     lats = []
     lons = []

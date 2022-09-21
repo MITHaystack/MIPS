@@ -36,7 +36,7 @@ def read_config_yaml(yamlfile,schematype):
     return data[0][0]
 
 def getschemafile(schematype):
-    schema_dict = {'mapping':'mapschema.yaml'}
+    schema_dict = {'mapping':'map_schema.yaml'}
     dirname = Path(__file__).expanduser().parent
     schemadir = dirname.joinpath('schema')
     return str(schemadir.joinpath(schema_dict[schematype]))

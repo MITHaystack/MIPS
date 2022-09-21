@@ -331,10 +331,7 @@ def combine_velocity_errors(
 
 
 """
-    The ISR array simulator takes a set of parameters to simulate a network of IS
-    radars. The parameters of the array are provided as vectors for each item.
-    The pair list controls which pairs of transmit and receive are computed and
-    combined into the final measurement speed estmiate.
+    The ISR array simulator takes a set of parameters to simulate a network of IS radars. The parameters of the array are provided as vectors for each item.  The pair list controls which pairs of transmit and receive are computed and combined into the final measurement speed estmiate.
 """
 
 
@@ -438,7 +435,7 @@ def isr_array_sim(
     lmbda = 2.99792458e8 / tx_frequency
 
     # tx pulse length, 1 ms
-    tx_pulse_length = 1e-3
+    # tx_pulse_length = 1e-3
     # smallest integration period
     t_int = tx_pulse_length
     # duty-cycle
@@ -846,6 +843,7 @@ def map_radar_array(
     tx_radars,
     rx_sites,
     rx_radars,
+    tx_pulse_length=1e-3,
     pair_list=None,
     plasma_parameter_errors=False,
     ionosphere=None,
@@ -855,9 +853,65 @@ def map_radar_array(
     mpclient=None,
     pfunc=print
 ):
-    """ "
-    Map an radar array for IS radar performance using the provide set of sites, radar types, parameters, ionospheric conditions, and limits.
+    """
+    Map an radar array for IS radar performance using the provide set of sites, radar types, parameters, ionospheric conditions, and limits. This function uses sets up the neccesary arrays and ionosphere conditions for isr_array_sim is called in this function.
 
+    Parameters
+    ----------
+    tname : str
+        Name of the map being run.
+    tx_sites : list
+        List of names of the tx sites.
+    tx_radars : list
+        Names of the tx radars.
+    rx_sites : list
+        List of names of the rx sites.
+    rx_radars : list
+        Names of the rx radars.
+    tx_pulse_length : float
+        Length of IPP of the mode.
+    pair_list: list
+        List of transmitter receiver pairs as tuples of list elements, e.g. [(0,0), (0,1)].
+    plasma_parameter_errors : bool
+        Bool to run plasma parameter error estimates.
+    ionosphere : dict
+        Dictionary that determines the ionospheric conditions.
+    t_max : float
+        Maximum amount of integration time that will be used for experiment to reach a specific parameter resolution.
+    ngrid : int
+        Number of one side of grid points that this will be evalued over.
+    extent : dict
+        Dictionary containing to determine the latitude and logitude extent. Keys for the location center point are center_lat, center_lon; and keys for sampling size: delta_lat, delta_lon.
+    mpclient : dask.distributed.client
+        Dask client to perform multiprocessing operations.
+    pfunc : func
+        Desired print function to use, use with logger module.
+
+    Returns
+    -------
+    map_info : xarray.Dataset
+        Results of simulation in xarray format.
+        Data variables
+        snr : float
+            signal-to-noise ratio linear scale, unitless
+        power_aperture_to_temperature : float
+            peak power aperture to temperature ratio, MW m^2 / K
+        avg_power_aperture_to_temperature : float
+            average power aperture to temperature ratio, MW m^2 / K
+        wavelength_to_debye_length_ratio : float
+            ratio of radar wavelength to Debye length for provided plasma parameters and radar frequency, unitless
+        echo_bandwidth : float
+            estimated signal bandwidth, Hz
+        measurement_time : float
+            measurement time required to achieve the requested statistical estimation error, s
+        dNe: float (optional)
+            expected plasma density error m^-3
+        dTi : float (optional)
+            Expected ion temperature error in k.
+        dTe : float (optional)
+            Expected electron temperature error in k.
+        dV : float (optional)
+            Expected velocity error in m/s.
     """
 
     # pfunc the name of the map that is being run
@@ -899,7 +953,7 @@ def map_radar_array(
     tx_mask_limits = np.array(steering_mask)
     tx_power = np.array(tx_power)
     tx_duty_cycle = np.array(tx_duty_cycle)
-
+    t_int = tx_pulse_length
     # rx radar parameters
     (
         rdtype,
@@ -928,8 +982,7 @@ def map_radar_array(
         T_e = 1000.0
         T_i = 800.0
         iri_time = "fixed parameters"  # '2012-10-22T0:00:00Z'
-        tx_pulse_length = 1e-3
-        t_int = tx_pulse_length
+
 
 
         ionosphere = {
@@ -948,9 +1001,8 @@ def map_radar_array(
         N_e = ionosphere["N_e"]
         T_e = ionosphere["T_e"]
         T_i = ionosphere["T_i"]
-        iri_time = ionosphere["iri_time"]
-        tx_pulse_length = ionosphere["pulse_length"]
-        t_int = tx_pulse_length
+        iri_time = ionosphere.get("iri_time",'fixed parameters')
+
 
     print("pulse_length: " + str(tx_pulse_length))
 
