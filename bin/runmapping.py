@@ -238,7 +238,7 @@ def runmapping(configfiles, filenames=[], plotfiles=[], logfile=None, mp=False, 
         if not imap["map_fname"] is None:
             imap["map_info"] = map_ds
             isr_map_plot(**imap)
-
+    logprint('Finished all simulations.')
 
 if __name__ == "__main__":
     args_commd = parse_command_line()
