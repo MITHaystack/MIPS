@@ -220,12 +220,18 @@ def runmapping(configfiles, filenames=[], plotfiles=[], logfile=None, mp=False, 
     ):
         isim["mpclient"] = client
         instr = "Started {0} simulation".format(isim["tname"])
-        logger.info(instr)
-        # isim['pfunc'] = logger.info
+
+        if logfile is None:
+            logprint = print
+        else:
+            logprint = logger.info
+        logprint(instr)
+
+        isim['pfunc'] = logprint
         map_ds = map_radar_array(**isim)
         if not ifilename is None:
             instr1 = "Saving {0} simulation to {1}".format(isim["tname"], ifilename)
-            logger.info(instr1)
+            logprint(instr1)
             map_ds.to_netcdf(ifilename, engine="h5netcdf", invalid_netcdf=True)
         if not "map_fname" in imap.keys():
             imap["map_fname"] = plotfiles

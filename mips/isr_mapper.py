@@ -1069,7 +1069,7 @@ def map_radar_array(
     elif type(pair_list) is list:
         pfunc("external pair list provided")
 
-    pfunc("pair list:", pair_list)
+    pfunc("pair list: " +  str(pair_list))
 
     map_info = isr_array_sim(
         tx_lat=tx_lat,

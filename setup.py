@@ -25,7 +25,7 @@ req = [
     "astropy",
     "cartopy",
 ]
-scripts = ["examples/mips_performance_sim.py","examples/mips_zenith_comparison.py","examples/mips_misa_mapping.py","examples/mips_eiscat3d_mapping.py"]
+scripts = ["examples/mips_performance_sim.py","examples/mips_zenith_comparison.py","examples/mips_misa_mapping.py","examples/mips_eiscat3d_mapping.py","bin/runmapping.py"]
 config = {
     "description": "Millstone IS Performance Simulator",
     "author": "Phil Erickson, Frank Lind, Juha Viernien, John Swoboda, Bill Rideout",
