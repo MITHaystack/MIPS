@@ -1,6 +1,7 @@
 LICENSE
 README.rst
 setup.py
+bin/runmapping.py
 examples/mips_eiscat3d_mapping.py
 examples/mips_misa_mapping.py
 examples/mips_performance_sim.py
