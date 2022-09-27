@@ -21,7 +21,7 @@ import scipy.constants as c
 
 from .coord import geodetic_to_az_el_r, azel_ecef, geodetic2ecef
 from .isr_performance import is_snr, iri2016
-from .isr_sites import build_site_lists, build_radar_lists
+from .configtools import build_site_lists, build_radar_lists
 from .isr_sim_array import simulate_data
 # from mpl_toolkits.basemap import Basemap, shiftgrid
 import xarray as xr
