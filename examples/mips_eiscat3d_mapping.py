@@ -12,7 +12,6 @@ from pathlib import Path
 from mips.isr_mapper import map_radar_array
 from mips.isr_plotting import isr_map_plot
 
-from mips.isr_sites import *
 
 
 def main():
