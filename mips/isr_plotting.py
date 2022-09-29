@@ -80,6 +80,14 @@ def isr_map_plot(
     """
     Take the information produced by the IS mapping code and produce a map plot with proper annotations.
 
+    Parameters
+    ----------
+    map_info : xarray.Dataset
+        Result of the ISR mapping simulation.
+    map_parameters : list
+        List of desired map parameters to plot.
+    dval_max :
+
     """
     map_fname = Path(map_fname)
     tx_lat = map_info.attrs['tx_lat']
@@ -139,6 +147,8 @@ def isr_map_plot(
 
         cm = plt.get_cmap("viridis").copy()
         cm.set_bad("gray",alpha=0.)
+        import ipdb
+        ipdb.set_trace()
         if log_scale:
 
             if vmax < 0:

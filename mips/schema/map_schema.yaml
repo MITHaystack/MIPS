@@ -10,6 +10,7 @@ simobj:
   rx_sites: list(str())
   rx_radars: list(str())
   tx_pulse_length: num(required=False)
+  ipp: num(required=False)
   pair_list: any(enum('cross','self','mimo'),list())
   plasma_parameter_errors: bool()
   ionosphere: include('ionosphereobj',required=False)

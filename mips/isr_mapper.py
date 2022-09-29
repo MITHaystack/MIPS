@@ -846,6 +846,7 @@ def map_radar_array(
     tx_radars,
     rx_sites,
     rx_radars,
+    ipp=None,
     tx_pulse_length=1e-3,
     pair_list=None,
     plasma_parameter_errors=False,
@@ -871,8 +872,10 @@ def map_radar_array(
         List of names of the rx sites.
     rx_radars : list
         Names of the rx radars.
+    ipp : float
+        Interpulse period in seconds.
     tx_pulse_length : float
-        Length of IPP of the mode.
+        Length of pulse of the mode.
     pair_list: list
         List of transmitter receiver pairs as tuples of list elements, e.g. [(0,0), (0,1)].
     plasma_parameter_errors : bool
@@ -955,8 +958,14 @@ def map_radar_array(
     tx_gain = np.array(tx_gain)
     tx_mask_limits = np.array(steering_mask)
     tx_power = np.array(tx_power)
-    tx_duty_cycle = np.array(tx_duty_cycle)
-    t_int = tx_pulse_length
+    if ipp is None:
+
+        tx_duty_cycle = np.array(tx_duty_cycle)
+        t_int = tx_pulse_length/tx_duty_cycle
+    else:
+        t_int = ipp
+        tx_duty_cycle = [tx_pulse_length/ipp]*len(tx_duty_cycle)
+
     # rx radar parameters
     (
         rdtype,

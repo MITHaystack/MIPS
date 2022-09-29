@@ -5,16 +5,16 @@ sim:
   rx_sites: [skibotn,kaiseniemi,karesuvanto]
   rx_radars: [eiscat3d_tx,eiscat3d_rx,eiscat3d_rx]
   pair_list: mimo
-  tx_pulse_length: 0.0005
-  ipp: .002
+  tx_pulse_length: 0.001
+  ipp: .0164
   plasma_parameter_errors: True
-  ngrid: 50
+  ngrid: 120
   ionosphere:
     use_iri: False
-    alt_m: 150000.0
-    N_e: 100000000000.0
-    T_e: 400
-    T_i: 300
+    alt_m: 800000.0
+    N_e: 50000000000.0
+    T_e: 2700
+    T_i: 2000
   extent:
     center_lat: 68.82
     center_lon: 20.41
@@ -26,7 +26,7 @@ map:
   dval_max: [10000.0,0.1,20.0,20.0,30.0]
   map_zoom: .2
   range_contours: [0]
-  map_fname: e3d_multistatic_E-region.png
+  map_fname: e3d_multistatic_topside.png
   map_type: normal
   annotate: True
   legend: True

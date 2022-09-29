@@ -95,7 +95,7 @@ radars:
   - 60.0
   freq: 223000000.0
   tx_gain: 43.0
-  rx_gain: 43.0
+  rx_gain: 22.0
   tx_power: 5000000.0
   duty: 0.2
   tsys_type: fixed_high
@@ -112,7 +112,7 @@ radars:
   - 60.0
   freq: 223000000.0
   tx_gain: 43.0
-  rx_gain: 43.0
+  rx_gain: 22.0
   tx_power: 0.0
   duty: 0.0
   tsys_type: fixed_low

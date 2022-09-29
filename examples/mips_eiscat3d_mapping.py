@@ -50,7 +50,7 @@ def main():
         "use_iri": False,
         "iri_type": "local",
         "iri_time": "fixed parameters",
-        "alt_m": 100e3,
+        "alt_m": 150e3,
         "N_e": 1e11,
         "T_e": 300.0,
         "T_i": 300.0,
@@ -79,7 +79,7 @@ def main():
         "T_e": 2700.0,
         "T_i": 2000.0,
     }
-
+    
     ionosphere_list = [ionosphere_eregion, ionosphere_fregion, ionosphere_topside]
 
     for iidx, iono in enumerate(ionosphere_list):
