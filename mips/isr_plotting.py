@@ -147,8 +147,7 @@ def isr_map_plot(
 
         cm = plt.get_cmap("viridis").copy()
         cm.set_bad("gray",alpha=0.)
-        import ipdb
-        ipdb.set_trace()
+
         if log_scale:
 
             if vmax < 0:
