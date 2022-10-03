@@ -8,7 +8,7 @@ sim:
   tx_pulse_length: 0.0005
   ipp: .002
   plasma_parameter_errors: True
-  ngrid: 50
+  ngrid: 120
   ionosphere:
     use_iri: False
     alt_m: 150000.0
