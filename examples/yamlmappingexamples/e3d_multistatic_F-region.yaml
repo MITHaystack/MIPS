@@ -5,7 +5,8 @@ sim:
   rx_sites: [skibotn,kaiseniemi,karesuvanto]
   rx_radars: [eiscat3d_tx,eiscat3d_rx,eiscat3d_rx]
   pair_list: mimo
-  tx_pulse_length: 0.00048
+  n_bauds: 1
+  tx_baud_length: 0.00048
   ipp: .0082
   plasma_parameter_errors: True
   ngrid: 120

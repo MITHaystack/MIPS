@@ -44,7 +44,7 @@ def model_run_1():
     paramvalues = dict(
         peak_power_W=pwr,
         maximum_range_m=800e3,
-        pulse_length_s=1000e-6,
+        baud_length_s=1000e-6,
         duty_cycle=0.1,
         efficiency_tx=1.0,
         efficiency_rx=1.0,
@@ -90,7 +90,7 @@ def model_run_1():
         "%.0f km alt\npl=%.0f ms\nne=%.0e m$^{-3}$\n%.0fMW peak @ d=%.0f%%\nTe=%.0f,Ti=%.0f\n$A_{\mathrm{eff}}=%1.0f$ m$^{2}$"
         % (
             attrs["target_to_rx_range_m"] / 1e3,
-            attrs["pulse_length_s"] * 1e3,
+            attrs["baud_length_s"] * 1e3,
             attrs["Ne"],
             attrs["peak_power_W"] / 1e6,
             attrs["duty_cycle"] * 100,
@@ -153,7 +153,7 @@ def model_run_2():
     paramvalues = dict(
         peak_power_W=pwr,
         maximum_range_m=800e3,
-        pulse_length_s=rng * 2 / sc.c,
+        baud_length_s=rng * 2 / sc.c,
         excess_rx_noise_K=0.0,
         gain_tx_dB=gn,
         gain_rx_dB=gn,
@@ -196,7 +196,7 @@ def model_run_2():
             attrs["n_elements"],
             attrs["element_pwr"],
             rng / 1e3,
-            attrs["pulse_length_s"] * 1e3,
+            attrs["baud_length_s"] * 1e3,
             attrs["Ne"],
             attrs["peak_power_W"] / 1e6,
             attrs["duty_cycle"] * 100,
@@ -245,7 +245,7 @@ def model_run_3():
     paramvalues = dict(
         peak_power_W=pwr,
         maximum_range_m=800e3,
-        pulse_length_s=rng * 2 / sc.c,
+        baud_length_s=rng * 2 / sc.c,
         excess_rx_noise_K=0.0,
         gain_tx_dB=gn,
         gain_rx_dB=gn,
@@ -303,7 +303,7 @@ def model_run_3():
             attrs["n_elements"],
             attrs["element_pwr"],
             rng / 1e3,
-            attrs["pulse_length_s"] * 1e3,
+            attrs["baud_length_s"] * 1e3,
             attrs["Ne"],
             attrs["peak_power_W"] / 1e6,
             attrs["Te"],
@@ -342,7 +342,7 @@ def model_run_4():
 
     paramvalues = dict(
         maximum_range_m=800e3,
-        pulse_length_s=rng * 2 / sc.c,
+        baud_length_s=rng * 2 / sc.c,
         excess_rx_noise_K=x_tsys_mono,
         gain_tx_dB=gn,
         gain_rx_dB=gn,
@@ -421,7 +421,7 @@ def model_run_4():
             attrs["n_elements"],
             attrs["element_pwr"],
             rng / 1e3,
-            attrs["pulse_length_s"] * 1e3,
+            attrs["baud_length_s"] * 1e3,
             attrs["Ne"],
             attrs["Te"],
             attrs["Ti"],
@@ -456,7 +456,7 @@ def model_run_5():
     x_tsys = 0.0
     paramvalues = dict(
         maximum_range_m=800e3,
-        pulse_length_s=rng * 2 / sc.c,
+        baud_length_s=rng * 2 / sc.c,
         duty_cycle=0.1,
         excess_rx_noise_K=x_tsys,
         frequency_Hz=440e6,
@@ -500,7 +500,7 @@ def model_run_5():
     attrs = dataset.attrs
     lstr = "%.0f km alt\npl=%.0f ms\nne=%.0e m^-3\n%.0fMW peak\nTe=%.0f,Ti=%.0f" % (
         rng / 1e3,
-        attrs["pulse_length_s"] * 1e3,
+        attrs["baud_length_s"] * 1e3,
         attrs["Ne"],
         total_pwr / 1e6,
         attrs["Te"],
@@ -558,7 +558,7 @@ def model_run_6():
 
     paramvalues = dict(
         peak_power_W=pwr,
-        pulse_length_s=tpulse,
+        baud_length_s=tpulse,
         duty_cycle=duty,
         gain_tx_dB=gn,
         gain_rx_dB=gn,
@@ -606,7 +606,7 @@ def model_run_6():
 
     paramvalues = dict(
         peak_power_W=pwr,
-        pulse_length_s=tpulse,
+        baud_length_s=tpulse,
         duty_cycle=duty,
         gain_tx_dB=gn,
         gain_rx_dB=gn,
@@ -649,7 +649,7 @@ def model_run_6():
 
     paramvalues = dict(
         peak_power_W=pwr,
-        pulse_length_s=tpulse,
+        baud_length_s=tpulse,
         duty_cycle=duty,
         gain_tx_dB=gn,
         gain_rx_dB=gn,
@@ -842,7 +842,7 @@ def model_run_7():
 
     paramvalues = dict(
         peak_power_W=pwr,
-        pulse_length_s=tpulse,
+        baud_length_s=tpulse,
         duty_cycle=duty,
         gain_tx_dB=gn,
         gain_rx_dB=gn,
@@ -1076,7 +1076,7 @@ def model_run_8():
 
     paramvalues = dict(
         peak_power_W=pwr,
-        pulse_length_s=tpulse,
+        baud_length_s=tpulse,
         duty_cycle=duty,
         gain_tx_dB=gn,
         gain_rx_dB=gn,
@@ -1258,7 +1258,7 @@ def model_run_9():
         peak_power_W=pwr,
         maximum_range_m=800e3,
         duty_cycle=duty,
-        pulse_length_s=mho_range * 2 / sc.c,
+        baud_length_s=mho_range * 2 / sc.c,
         excess_rx_noise_K=x_tsys,
         gain_tx_dB=gn,
         gain_rx_dB=gn,
@@ -1282,9 +1282,9 @@ def model_run_9():
     )
     paramvalues["O+"] = 1.0
 
-    coorddict = {"pulse_length_s": tpulse}
+    coorddict = {"baud_length_s": tpulse}
 
-    data_dims = {"pulse_length_s": len(tpulse)}
+    data_dims = {"baud_length_s": len(tpulse)}
     datasetamisr = simulate_data(data_dims, coorddict, paramvalues)
 
     # MISA ISR at 440 MHz (pulsed)
@@ -1305,7 +1305,7 @@ def model_run_9():
         peak_power_W=pwr,
         maximum_range_m=800e3,
         duty_cycle=duty,
-        pulse_length_s=mho_range * 2 / sc.c,
+        baud_length_s=mho_range * 2 / sc.c,
         excess_rx_noise_K=x_tsys,
         gain_tx_dB=gn,
         gain_rx_dB=gn,

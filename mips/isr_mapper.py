@@ -344,7 +344,8 @@ def isr_array_sim(
     tx_frequency,
     tx_peak_power,
     tx_duty_cycle,
-    tx_pulse_length,
+    n_bauds,
+    tx_baud_length,
     rx_type,
     rx_boresite,
     rx_mask_limits,
@@ -382,7 +383,8 @@ def isr_array_sim(
         tx_frequency=440e6,
         tx_peak_power=[2e6],
         tx_duty_cycle=[0.1],
-        tx_pulse_length=1e-3,
+        n_bauds=1,
+        tx_baud_length=1e-3,
         rx_type=["planar_array"],
         rx_boresite=np.array([[0.0, 0.0]]),
         rx_mask_limits=np.array([[-180.0, 180.0, 0.0, 90.0]]),
@@ -428,9 +430,9 @@ def isr_array_sim(
     lmbda = 2.99792458e8 / tx_frequency
 
     # tx pulse length, 1 ms
-    # tx_pulse_length = 1e-3
+    # tx_baud_length = 1e-3
     # smallest integration period
-    t_int = tx_pulse_length
+    t_int = n_bauds*tx_baud_length
     # duty-cycle
     eff_tx = 1.0
     eff_rx = 1.0
@@ -440,7 +442,7 @@ def isr_array_sim(
     data_dims = dict(pairs=n_paths, lat=n_grid_cells, long=n_grid_cells)
     # Terms that will be constant through out simulation
     const_dict = dict(
-        pulse_length_s=tx_pulse_length,
+        baud_length_s=tx_baud_length,
         maximum_range_m=max_range,
         efficiency_tx=1.0,
         efficiency_rx=1.0,
@@ -847,7 +849,8 @@ def map_radar_array(
     rx_sites,
     rx_radars,
     ipp=None,
-    tx_pulse_length=1e-3,
+    n_bauds=1,
+    tx_baud_length=1e-3,
     pair_list=None,
     plasma_parameter_errors=False,
     ionosphere=None,
@@ -874,8 +877,10 @@ def map_radar_array(
         Names of the rx radars.
     ipp : float
         Interpulse period in seconds.
-    tx_pulse_length : float
-        Length of pulse of the mode.
+    n_bauds : int
+        Number of bauds on the transmit pulse
+    tx_baud_length : float
+        Length of bauds of the mode.
     pair_list: list
         List of transmitter receiver pairs as tuples of list elements, e.g. [(0,0), (0,1)].
     plasma_parameter_errors : bool
@@ -961,10 +966,10 @@ def map_radar_array(
     if ipp is None:
 
         tx_duty_cycle = np.array(tx_duty_cycle)
-        t_int = tx_pulse_length/tx_duty_cycle
+        t_int = n_bauds*tx_baud_length/tx_duty_cycle
     else:
         t_int = ipp
-        tx_duty_cycle = [tx_pulse_length/ipp]*len(tx_duty_cycle)
+        tx_duty_cycle = [n_bauds*tx_baud_length/ipp]*len(tx_duty_cycle)
 
     # rx radar parameters
     (
@@ -1013,7 +1018,7 @@ def map_radar_array(
         T_i = ionosphere["T_i"]
         iri_time = ionosphere.get("iri_time", "fixed parameters")
 
-    print("pulse_length: " + str(tx_pulse_length))
+    print("N bauds: "+ str(n_bauds)+" baud_length: " + str(tx_baud_length))
 
     if extent == None:
 
@@ -1109,7 +1114,8 @@ def map_radar_array(
         tx_frequency=frequency,
         tx_peak_power=tx_power,
         tx_duty_cycle=tx_duty_cycle,
-        tx_pulse_length=tx_pulse_length,
+        n_bauds=n_bauds,
+        tx_baud_length=tx_baud_length,
         eval_grid=eval_grid,
         t_max=t_max,
         target_estimation_error=target_estimation_error,

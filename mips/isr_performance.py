@@ -747,7 +747,8 @@ def is_calculate_plasma_parameter_errors(
 def is_snr(
     peak_power_W,
     maximum_range_m,
-    pulse_length_s,
+    baud_length_s,
+    n_bauds,
     duty_cycle,
     gain_tx_dB,
     gain_rx_dB,
@@ -782,8 +783,10 @@ def is_snr(
         Average TX Power, W
     maximum_range_m : Float
         maximum range that produces measureable signal, m
-    pulse_length_s : float
-        radar transmit pulse length or baud length, s
+    baud_length_s : float
+        radar transmit baud length, s
+    n_bauds : int
+        Number of bauds in pulse
     duty_cycle float : float
         estimation duty cycle, unitless
     gain_tx_dB : float
@@ -850,7 +853,7 @@ def is_snr(
     Previous default parameters:
         peak_power_W=1e6,
         maximum_range_m=600e3,
-        pulse_length_s=500e-6,
+        baud_length_s=500e-6,
         duty_cycle=0.05,
         gain_tx_dB=42.0,
         gain_rx_dB=42.0,
@@ -893,8 +896,14 @@ def is_snr(
     rad_tx_beamwidth = tx_beamwidth * math.pi / 180.0
 
     # range resolution is determined by pulse length
-    range_resolution_m = sc.c / 2.0 * pulse_length_s
+    range_resolution_m = sc.c / 2.0 * baud_length_s
 
+    # baud_gain for measurement time
+    # J. Stamm, J. Vierinen, J. M. Urco, B. Gustavsson, and J. L. Chau, “Radar imaging with EISCAT 3D,” Annales Geophysicae, vol. 39, no. 1, pp. 119–134, Feb. 2021, doi: 10.5194/angeo-39-119-2021.
+    if n_bauds < 2:
+        baud_gain = 1
+    else:
+        baud_gain = n_bauds*(n_bauds-1)/2.
     # Illuminated volume (approximation from Peebles, 5.7-19)
     # if we are modeling a bi-static path, include a penalty factor for mismatched volumes
     volume = (
@@ -1053,7 +1062,8 @@ def is_snr(
 
     # decorrelation time of the incoherent scatter process.
     decorrelation_time = 1.0 / (2.0 * line_shift)
-
+    # pulse length
+    p_lenth = baud_length_s * n_bauds
     # how many incoherent scatter samples per second
     if monostatic:
         # time of flight to maximum range must be considered as a limiting factor to how often we can
@@ -1061,11 +1071,11 @@ def is_snr(
         minimum_observation_interval = 2.0 * maximum_range_m / sc.c
         sample_rate = 1.0 / numpy.maximum(
             minimum_observation_interval,
-            numpy.maximum(decorrelation_time / duty_cycle, pulse_length_s / duty_cycle),
+            numpy.maximum(decorrelation_time / duty_cycle, p_lenth / duty_cycle),
         )
     else:
         sample_rate = 1.0 / numpy.maximum(
-            decorrelation_time / duty_cycle, pulse_length_s / duty_cycle
+            decorrelation_time / duty_cycle, p_lenth / duty_cycle
         )
 
     #
@@ -1074,9 +1084,10 @@ def is_snr(
     #
     # find out how to divide our transmit pulse to obtain minimal measurement time,
     # also known as the Mr. ACF trick.
-    #
+    #M. P. Sulzer, “A phase modulation technique for a sevenfold statistical improvement in incoherent scatter data‐taking,” Radio Science, vol. 21, no. 4, pp. 737–744, Jul. 1986, doi: 10.1029/RS021i004p00737.
+
     s_factor = 1.0
-    mtime = (s / s_factor + n) ** 2.0 / (
+    mtime = (s / s_factor + n) ** 2.0 / ( baud_gain *
         s_factor * sample_rate * estimation_error_stdev ** 2.0 * (s / s_factor) ** 2.0
     )
 
@@ -1084,8 +1095,8 @@ def is_snr(
         mtime = numpy.minimum(
             mtime,
             (s / s_factor + n) ** 2.0
-            / (
-                s_factor
+            / ( baud_gain
+                * s_factor
                 * sample_rate
                 * estimation_error_stdev ** 2.0
                 * (s / s_factor) ** 2.0
