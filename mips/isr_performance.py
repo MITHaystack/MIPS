@@ -424,7 +424,7 @@ def iri2016(dt, gdlat, gdlon, gdalt_start, gdalt_end, gdalt_step):
     return a
 
 
-def speccheck(ionspecies,pfunc=print):
+def speccheck(ionspecies, pfunc=print):
     """Used for assert statments to check if species is valid.
 
     Parameters
@@ -703,7 +703,7 @@ def is_calculate_plasma_parameter_errors(
         J[:, i] = (spec1 / spec_scale - spec0 / spec_scale) / df[i]
 
     sigma = numpy.zeros(n_spec)
-    sigma[:] = estimation_error_stdev ** 2.0
+    sigma[:] = estimation_error_stdev**2.0
     Sigma_inv = numpy.diag(1.0 / sigma)
     try:
         Sigma_post = numpy.linalg.inv(
@@ -772,7 +772,7 @@ def is_snr(
     ionfracs,
     quick_bandwidth_estimate,
     calculate_plasma_parameter_errors,
-    pfunc=print
+    pfunc=print,
 ):
 
     """SNR estimation equation
@@ -903,14 +903,14 @@ def is_snr(
     if n_bauds < 2:
         baud_gain = 1
     else:
-        baud_gain = n_bauds*(n_bauds-1)/2.
+        baud_gain = n_bauds * (n_bauds - 1) / 2.0
     # Illuminated volume (approximation from Peebles, 5.7-19)
     # if we are modeling a bi-static path, include a penalty factor for mismatched volumes
     volume = (
         bistatic_volume_factor
         * math.pi
-        * tx_to_target_range_m ** 2
-        * rad_tx_beamwidth ** 2
+        * tx_to_target_range_m**2
+        * rad_tx_beamwidth**2
         * range_resolution_m
         / (16.0 * math.log(2.0))
     )
@@ -926,12 +926,12 @@ def is_snr(
     # see Howells and Benyon 1978 or similar.
 
     # fundamental electron radius and scattering cross-section
-    electron_radius = sc.e ** 2.0 * sc.mu_0 / (4.0 * sc.pi * sc.m_e)
+    electron_radius = sc.e**2.0 * sc.mu_0 / (4.0 * sc.pi * sc.m_e)
 
     # From Beynon and Williams 1978.
     # notice that bistatic depolarization effect is taken into account at a later stage in power
     # lost from a circularly polarized transmission on bistatic receive
-    electron_xsection = 4.0 * sc.pi * electron_radius ** 2.0
+    electron_xsection = 4.0 * sc.pi * electron_radius**2.0
 
     # LNA system temperature, K
     lna_temperature = rx_temperature_model(frequency_Hz, tsys_type)
@@ -940,19 +940,18 @@ def is_snr(
     # Total effective system temperature including user addon, K
     system_temperature = lna_temperature + sky_temperature + excess_rx_noise_K
 
-
     # Peak power aperture to temperature ratio, MW m^2 / K
     power_aperture_to_temperature = (
         peak_power_W
         * gain_tx
-        * wavelength ** 2
+        * wavelength**2
         / (4 * sc.pi * 1e6 * system_temperature)
     )
     # Average power aperture to temperature ratio, MW m^2 / K
     avg_power_aperture_to_temperature = duty_cycle * power_aperture_to_temperature
 
     # Debye length, m
-    debye_length_m = (sc.epsilon_0 * sc.k * Te / (Ne * sc.e ** 2)) ** 0.5
+    debye_length_m = (sc.epsilon_0 * sc.k * Te / (Ne * sc.e**2)) ** 0.5
     # ratio of radar wavelength to Debye length for provided plasma
     # parameters and radar frequency, unitless
     wavelength_to_debye_length_ratio = wavelength / debye_length_m
@@ -962,8 +961,8 @@ def is_snr(
     alpha = 4.0 * sc.pi * debye_length_m / wavelength
     unit_xsection = electron_xsection * (
         1.0
-        - (1.0 + alpha ** 2.0) ** (-1.0)
-        + ((1.0 + alpha ** 2.0) * (1.0 + alpha ** 2.0 + Te / Ti)) ** -1.0
+        - (1.0 + alpha**2.0) ** (-1.0)
+        + ((1.0 + alpha**2.0) * (1.0 + alpha**2.0 + Te / Ti)) ** -1.0
     )
 
     if numpy.min(wavelength_to_debye_length_ratio) < 1.0:
@@ -1024,11 +1023,11 @@ def is_snr(
         * efficiency_tx
         * gain_tx
         * gain_rx
-        * wavelength ** 2.0
+        * wavelength**2.0
         * rcs
         / (
             (4.0 * sc.pi) ** 3.0
-            * (tx_to_target_range_m ** 2.0 * target_to_rx_range_m ** 2.0)
+            * (tx_to_target_range_m**2.0 * target_to_rx_range_m**2.0)
         )
     )
     n = sc.k * system_temperature * bandwidth
@@ -1084,21 +1083,26 @@ def is_snr(
     #
     # find out how to divide our transmit pulse to obtain minimal measurement time,
     # also known as the Mr. ACF trick.
-    #M. P. Sulzer, “A phase modulation technique for a sevenfold statistical improvement in incoherent scatter data‐taking,” Radio Science, vol. 21, no. 4, pp. 737–744, Jul. 1986, doi: 10.1029/RS021i004p00737.
+    # M. P. Sulzer, “A phase modulation technique for a sevenfold statistical improvement in incoherent scatter data‐taking,” Radio Science, vol. 21, no. 4, pp. 737–744, Jul. 1986, doi: 10.1029/RS021i004p00737.
 
     s_factor = 1.0
-    mtime = (s / s_factor + n) ** 2.0 / ( baud_gain *
-        s_factor * sample_rate * estimation_error_stdev ** 2.0 * (s / s_factor) ** 2.0
+    mtime = (s / s_factor + n) ** 2.0 / (
+        baud_gain
+        * s_factor
+        * sample_rate
+        * estimation_error_stdev**2.0
+        * (s / s_factor) ** 2.0
     )
 
     for s_factor in numpy.arange(2.0, 10.0):
         mtime = numpy.minimum(
             mtime,
             (s / s_factor + n) ** 2.0
-            / ( baud_gain
+            / (
+                baud_gain
                 * s_factor
                 * sample_rate
-                * estimation_error_stdev ** 2.0
+                * estimation_error_stdev**2.0
                 * (s / s_factor) ** 2.0
             ),
         )

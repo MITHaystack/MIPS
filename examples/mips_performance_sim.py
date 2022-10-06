@@ -83,7 +83,9 @@ def model_run_1():
     # save data to disk
     datapath = Path("model_runs")
     datapath.mkdir(exist_ok=True)
-    dataset.to_netcdf(datapath.joinpath("model_run_1.nc"), engine="h5netcdf", invalid_netcdf=True)
+    dataset.to_netcdf(
+        datapath.joinpath("model_run_1.nc"), engine="h5netcdf", invalid_netcdf=True
+    )
     # make the plots
     attrs = dataset.attrs
     lstr = (
@@ -187,7 +189,9 @@ def model_run_2():
 
     datapath = Path("model_runs")
     datapath.mkdir(exist_ok=True)
-    dataset.to_netcdf(datapath.joinpath("model_run_2.nc"), engine="h5netcdf", invalid_netcdf=True)
+    dataset.to_netcdf(
+        datapath.joinpath("model_run_2.nc"), engine="h5netcdf", invalid_netcdf=True
+    )
 
     attrs = dataset.attrs
     lstr = (
@@ -279,7 +283,9 @@ def model_run_3():
 
     datapath = Path("model_runs")
     datapath.mkdir(exist_ok=True)
-    dataset.to_netcdf(datapath.joinpath("model_run_3.nc"), engine="h5netcdf", invalid_netcdf=True)
+    dataset.to_netcdf(
+        datapath.joinpath("model_run_3.nc"), engine="h5netcdf", invalid_netcdf=True
+    )
 
     duty_max_for_monostatic = 0.2
 
@@ -376,12 +382,16 @@ def model_run_4():
 
     datapath = Path("model_runs")
     datapath.mkdir(exist_ok=True)
-    dataset_m.to_netcdf(datapath.joinpath("model_run_4m.nc"), engine="h5netcdf", invalid_netcdf=True)
+    dataset_m.to_netcdf(
+        datapath.joinpath("model_run_4m.nc"), engine="h5netcdf", invalid_netcdf=True
+    )
 
     paramvalues["excess_rx_noise_K"] = x_tsys_bistat
     paramvalues["monostatic"] = False
     dataset_b = simulate_data(data_dims, coorddict, paramvalues)
-    dataset_b.to_netcdf(datapath.joinpath("model_run_4b.nc"), engine="h5netcdf", invalid_netcdf=True)
+    dataset_b.to_netcdf(
+        datapath.joinpath("model_run_4b.nc"), engine="h5netcdf", invalid_netcdf=True
+    )
 
     # monostatic limit at 5x range
     # This is an assumption about the self clutter distance
@@ -491,7 +501,9 @@ def model_run_5():
 
     datapath = Path("model_runs")
     datapath.mkdir(exist_ok=True)
-    dataset.to_netcdf(datapath.joinpath("model_run_5.nc"), engine="h5netcdf", invalid_netcdf=True)
+    dataset.to_netcdf(
+        datapath.joinpath("model_run_5.nc"), engine="h5netcdf", invalid_netcdf=True
+    )
 
     f, ax = pylab.subplots(2, 1, sharex=True)
 

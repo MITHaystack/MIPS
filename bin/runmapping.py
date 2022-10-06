@@ -227,7 +227,7 @@ def runmapping(configfiles, filenames=[], plotfiles=[], logfile=None, mp=False, 
             logprint = logger.info
         logprint(instr)
 
-        isim['pfunc'] = logprint
+        isim["pfunc"] = logprint
         map_ds = map_radar_array(**isim)
         if not ifilename is None:
             instr1 = "Saving {0} simulation to {1}".format(isim["tname"], ifilename)
@@ -238,7 +238,8 @@ def runmapping(configfiles, filenames=[], plotfiles=[], logfile=None, mp=False, 
         if not imap["map_fname"] is None:
             imap["map_info"] = map_ds
             isr_map_plot(**imap)
-    logprint('Finished all simulations.')
+    logprint("Finished all simulations.")
+
 
 if __name__ == "__main__":
     args_commd = parse_command_line()

@@ -432,7 +432,7 @@ def isr_array_sim(
     # tx pulse length, 1 ms
     # tx_baud_length = 1e-3
     # smallest integration period
-    t_int = n_bauds*tx_baud_length
+    t_int = n_bauds * tx_baud_length
     # duty-cycle
     eff_tx = 1.0
     eff_rx = 1.0
@@ -967,10 +967,10 @@ def map_radar_array(
     if ipp is None:
 
         tx_duty_cycle = np.array(tx_duty_cycle)
-        t_int = n_bauds*tx_baud_length/tx_duty_cycle
+        t_int = n_bauds * tx_baud_length / tx_duty_cycle
     else:
         t_int = ipp
-        tx_duty_cycle = [n_bauds*tx_baud_length/ipp]*len(tx_duty_cycle)
+        tx_duty_cycle = [n_bauds * tx_baud_length / ipp] * len(tx_duty_cycle)
 
     # rx radar parameters
     (
@@ -1019,7 +1019,7 @@ def map_radar_array(
         T_i = ionosphere["T_i"]
         iri_time = ionosphere.get("iri_time", "fixed parameters")
 
-    print("N bauds: "+ str(n_bauds)+" baud_length: " + str(tx_baud_length))
+    print("N bauds: " + str(n_bauds) + " baud_length: " + str(tx_baud_length))
 
     if extent == None:
 

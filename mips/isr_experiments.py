@@ -23,6 +23,7 @@ from .coord import geodetic_to_az_el_r, azel_ecef, geodetic2ecef
 from .isr_performance import is_snr, iri2016
 from .configtools import build_site_lists, build_radar_lists
 from .isr_sim_array import simulate_data
+
 # from mpl_toolkits.basemap import Basemap, shiftgrid
 import xarray as xr
 import iri2016 as iri
@@ -32,10 +33,12 @@ class ISExperimentDescription:
     def __init__():
         pass
 
-    def loadExperiment(fname='default_experiment.yaml'):
+    def loadExperiment(fname="default_experiment.yaml"):
         pass
 
-    def startExperiment(start_time='2022-01-01T00:00:00Z', end_time='2022-01-01T12:00:00Z'):
+    def startExperiment(
+        start_time="2022-01-01T00:00:00Z", end_time="2022-01-01T12:00:00Z"
+    ):
         pass
 
     def resetExperiment():
@@ -51,8 +54,10 @@ class ISExperimentDescription:
 def simulate_measurement_state(state):
     pass
 
+
 def output_is_simulation(state, sim_measurements):
     pass
+
 
 def simulate_experiment(experiment_fname):
     pass
