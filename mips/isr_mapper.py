@@ -443,6 +443,7 @@ def isr_array_sim(
     # Terms that will be constant through out simulation
     const_dict = dict(
         baud_length_s=tx_baud_length,
+        n_bauds=n_bauds,
         maximum_range_m=max_range,
         efficiency_tx=1.0,
         efficiency_rx=1.0,

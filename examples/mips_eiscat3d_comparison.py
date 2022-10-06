@@ -5,6 +5,7 @@
     This is a set of simulations for mapping the spatial performance of
     radars and radar networks with the MIPS model, targeted to the EISCAT 3D
     radar system.
+    J. Stamm, J. Vierinen, J. M. Urco, B. Gustavsson, and J. L. Chau, “Radar imaging with EISCAT 3D,” Annales Geophysicae, vol. 39, no. 1, pp. 119–134, Feb. 2021, doi: 10.5194/angeo-39-119-2021.
 
 """
 
@@ -15,7 +16,14 @@ import numpy as np
 import scipy.constants as sc
 
 def make_mips_data():
+    """Create the dataset.
 
+    Returns
+    -------
+    ds1 : xarray.Dataset
+        Data set created from MIPS.
+
+    """
     f_c = 230e6
     ne1 = np.logspace(10.5, 12,20)
     range_res = np.array([100,500,1000,1500,2000])
@@ -67,7 +75,17 @@ def make_mips_data():
     dataset = simulate_data(data_dims, coorddict, paramvalues)
     return dataset
 
+
 def make_plot(ds1,figdir):
+    """Create the plot and save a figure.
+
+    Parameters
+    ----------
+    ds1 : xarray.Dataset
+        Data set created from MIPS.
+    figdir : Path
+        Directory holding the figure.
+    """
 
 
 
