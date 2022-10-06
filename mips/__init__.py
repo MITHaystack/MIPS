@@ -12,7 +12,7 @@ from .isr_performance import (
 
 from .configtools import read_config_yaml
 from .isr_sim_array import simulate_data
-
+from .isr_mapper import map_radar_array
 from . import _version
 
 __version__ = _version.get_versions()["version"]
