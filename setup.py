@@ -8,7 +8,7 @@ This is the setup file for the MIPS python package
 from pathlib import Path
 from setuptools import setup, find_packages
 
-# import versioneer
+import versioneer
 
 req = [
     "madrigalWeb",
@@ -30,8 +30,8 @@ config = {
     "description": "Millstone IS Performance Simulator",
     "author": "Phil Erickson, Frank Lind, Juha Viernien, John Swoboda, Bill Rideout",
     "url": "https://github.com/MITHaystack/MIPS",
-    "version": "v2.1.0",  # versioneer.get_version(),
-    # "cmdclass": versioneer.get_cmdclass(),
+    "version": versioneer.get_version(),
+    "cmdclass": versioneer.get_cmdclass(),
     "install_requires": req,
     "python_requires": ">=3.0",
     "packages": find_packages(),

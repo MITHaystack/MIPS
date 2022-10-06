@@ -3,3 +3,6 @@ from .isr_performance import rx_temperature_model, sky_temperature_model, simple
 from .configtools import read_config_yaml
 from .isr_sim_array import simulate_data
 __version__ = "v2.1.0"
+
+from . import _version
+__version__ = _version.get_versions()['version']
