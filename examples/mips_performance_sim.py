@@ -351,7 +351,7 @@ def model_run_4():
 
     paramvalues = dict(
         maximum_range_m=800e3,
-        n_bauds = 1,
+        n_bauds=1,
         baud_length_s=rng * 2 / sc.c,
         excess_rx_noise_K=x_tsys_mono,
         gain_tx_dB=gn,

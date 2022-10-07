@@ -26,7 +26,7 @@ import iri2016 as iri
 
 
 def llh2ecef(lat, lon, alt):
-    """ Latitude, longitude, height to ecef.
+    """Latitude, longitude, height to ecef.
 
     Parameters
     ----------
@@ -1152,8 +1152,6 @@ def map_radar_array(
         T_e = ionosphere["T_e"]
         T_i = ionosphere["T_i"]
         iri_time = ionosphere.get("iri_time", "fixed parameters")
-
-
 
     if extent == None:
 
