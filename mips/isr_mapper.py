@@ -26,6 +26,26 @@ import iri2016 as iri
 
 
 def llh2ecef(lat, lon, alt):
+    """ Latitude, longitude, height to ecef.
+
+    Parameters
+    ----------
+    lat : float
+        Latitude in degrees.
+    lon : float
+        Longitude in degrees.
+    alt : float
+        Altitude in meters.
+
+    Returns
+    -------
+    x : float
+        ECEF x in meters.
+    y : float
+        ECEF y in meters.
+    z : float
+        ECEF z in meters.
+    """
     # see http://www.mathworks.de/help/toolbox/aeroblks/llatoecefpositionp.html
 
     rad = np.float64(6378137.0)  # Radius of the Earth (in meters)
@@ -281,8 +301,7 @@ def combine_velocity_errors(
     vel_mat, fov_mask, vel_error_stdev=10.0, max_error=100.0, min_error=0.0
 ):
     """
-    This method takes the velocity matrix k vector representation and the velocity errors,
-    Returns the latitude, longitude array of combined errors.
+    This method takes the velocity matrix k vector representation and the velocity errors. Returns the latitude, longitude array of combined errors.
 
     """
 
@@ -368,38 +387,73 @@ def isr_array_sim(
 
     Use IRI if indicated. For IRI the times are in Universal Time (Zulu). A local or NASA cgi version of IRI can be used.
 
-        tx_lat=np.array([-12.367718]),
-        tx_lon=np.array([-75.078307]),
-        tx_alt=np.array([0.0]),
-        rx_lat=np.array([-12.367718]),
-        rx_lon=np.array([-75.078307]),
-        rx_alt=np.array([0.0]),
-        tx_el_mask=np.array([0.0]),
-        rx_el_mask=np.array([0.0]),
-        tx_type=["planar_array"],
-        tx_boresite=np.array([[0.0, 0.0]]),
-        tx_mask_limits=np.array([[-180.0, 180.0, 0.0, 90.0]]),
-        tx_gain=[43.0],
-        tx_frequency=440e6,
-        tx_peak_power=[2e6],
-        tx_duty_cycle=[0.1],
-        n_bauds=1,
-        tx_baud_length=1e-3,
-        rx_type=["planar_array"],
-        rx_boresite=np.array([[0.0, 0.0]]),
-        rx_mask_limits=np.array([[-180.0, 180.0, 0.0, 90.0]]),
-        rx_gain=[43.0],
-        rx_tsys_type=["fixed_low"],
-        rx_extra_T_sys=[50.0],
-        pair_list=[],
-        eval_grid=[-90, 90, 0, 360],
-        n_grid_cells=150,
-        max_range=800e3,
-        v_doppler_max=2500.0,
-        t_max=60.0,
-        target_estimation_error=0.05,
-        plasma_parameter_errors=False,
-        ionosphere={
+    Parameters
+    ----------
+    tx_lat : array_like
+        Listing of latitudes of Tx sites.
+    tx_lon : array_like
+        Listing of longitudes of Tx sites.
+    tx_alt : array_like
+        Listing of altitudes of Tx sites.
+    rx_lat : array_like
+        Listing of latitudes of Rx sites.
+    rx_lon : array_like
+        Listing of longitudes of Rx sites.
+    rx_alt : array_like
+        Listing of altitudes of Rx sites.
+    tx_el_masking : array_like
+        Elevation mask for the Tx.
+    rx_el_masking : array_like
+        Elevation mask for the Rx.
+    tx_type : list
+        Transmit antenna type.
+    tx_boresite : list
+        Az and el location of boresite.
+    tx_mask_limites : array_like
+        Limits of the tx antennas in degrees. [min_az, max_az,min_el, max_el]
+    tx_gain : list
+        Tx antenna gain in dB.
+    tx_frequency : float
+        Transmitter center frequency in Hz.
+    tx_peak_power : list
+        Tx peak power in W.
+    tx_duty_cycle : lists
+        Tx duty cyle.
+    n_bauds : int
+        Number of bauds in the tx pulse.
+    tx_baud_length : float
+        Length of each baud in seconds.
+    rx_type : list
+        Tx antenna type.
+    rx_boresite : list
+        Az and el location of boresite.
+    rx_mask_limites : array_like
+        Limits of the rx antennas in degrees. [min_az, max_az,min_el, max_el]
+    rx_gain : list
+        Rx antenna gain in dB.
+    rx_tsys_type : list
+        Type of tsys behavior.
+    rx_extra_T_sys : list
+        Extra tsys in deg kelvin.
+    pair_list : list
+        Tx Rx pairs to be evaluated.
+    eval_grid : list
+        Latitude longitude grid to be evaluated over. [min_lat, max_lat, min_lon, max_lon].
+    n_grid_cells : int
+        Number of cells per dimension to evaluate over.
+    max_range : float
+        Maximum range that will be evaluated.
+    v_doppler_max : float
+        Maximum Doppler used for simulation.
+    t_max : float
+        Longest measurement time considered.
+    target_estimation_error : float
+        Desired error in target to set measurement speed.
+    plasma_parameter_errors : bool
+        If true will also determine plasma parameter errors.
+    ionosphere : dict
+        How the ionosphere will be handled.
+        example = {
             "use_iri": False,
             "iri_type": "local",
             "iri_time": None,
@@ -407,9 +461,16 @@ def isr_array_sim(
             "N_e": 2e11,
             "T_e": 1000.0,
             "T_i": 800.0,
-        },
+        }
+    mpclient : Dask.Client
+        Multiprocessing client from dask. If None then standard processing is used.
+    pfunc : func
+        Print function. defaults to standard print.
 
-
+    Returns
+    -------
+    dataset : xarray.Dataset
+        Final data set from simulation.
     """
     n_tx = len(tx_lat)
     n_rx = len(rx_lat)
@@ -780,7 +841,20 @@ def isr_array_sim(
 
 
 def pair_list_self(tx_sites):
-    """radar network self pair list"""
+    """Creates radar network self pair list
+
+    Parameters
+    ----------
+    tx_sites : list
+        List of transmitter sites.
+    rx_sites : list
+        List of receiver sites.
+
+    Returns
+    -------
+    pair_list : list
+        List of Tx Rx pairs.
+    """
 
     pair_list = []
 
@@ -791,7 +865,21 @@ def pair_list_self(tx_sites):
 
 
 def pair_list_cross(tx_sites, rx_sites):
-    """radar network cross pair list"""
+    """Creates a radar network cross pair list
+
+    Parameters
+    ----------
+    tx_sites : list
+        List of transmitter sites.
+    rx_sites : list
+        List of receiver sites.
+
+    Returns
+    -------
+    pair_list : list
+        List of Tx Rx pairs.
+
+    """
 
     pair_list = []
 
@@ -803,7 +891,20 @@ def pair_list_cross(tx_sites, rx_sites):
 
 
 def pair_list_mimo(tx_sites, rx_sites):
-    """radar network mimo list"""
+    """Creates radar network mimo list, i.e. cartesian product.
+
+    Parameters
+    ----------
+    tx_sites : list
+        List of transmitter sites.
+    rx_sites : list
+        List of receiver sites.
+
+    Returns
+    -------
+    pair_list : list
+        List of Tx Rx pairs.
+    """
     txv = list(range(len(tx_sites)))
     rxv = list(range(len(rx_sites)))
     pair_list = list(itertools.product(txv, rxv))
@@ -822,6 +923,36 @@ def annotate_standard(
     T_e,
     target_estimation_error,
 ):
+    """
+    Create the standard annotation strings for the plots.
+
+    Parameters
+    ----------
+    alt_m : float
+        Altitude in meters.
+    tx_gain : list
+        Transmitter antenna gain dB.
+    rx_elevation_threshold : list
+        Elevation threshold for receivers in degrees.
+    tx_power : list
+        Tx power in W
+    t_int : Float
+        Pulse length in s.
+    N_e : float
+        Electron density in m^-3
+    T_i : float
+        Ion temperature in K.
+    T_e : float
+        Electron temperature in K
+    target_estimation_error : float
+        Desired estimation error.
+
+    Returns
+    ------
+    annotate : string
+        Annotation for plots
+    """
+
     annotate1 = (
         "Alt %1.2f km\nGain %1.0f dB\nElevation threshold = %1.2f deg above horizon\n"
         % (alt_m / 1e3, tx_gain[0], rx_elevation_threshold[0])
@@ -992,6 +1123,9 @@ def map_radar_array(
     rx_tsys_type = rx_tsys_type
     rx_extra_T_sys = np.array(xtra_tsys)
 
+    pfunc("N bauds: " + str(n_bauds) + " baud_length: " + str(tx_baud_length))
+    pfunc("TX Frequency: {0}".format(tx_freq))
+    pfunc("TX power: {0} duty cycle: {1}".format(tx_power, tx_duty_cycle))
     # ionospheric parameters for non IRI based map static conditions
 
     if ionosphere == None:
@@ -1019,7 +1153,7 @@ def map_radar_array(
         T_i = ionosphere["T_i"]
         iri_time = ionosphere.get("iri_time", "fixed parameters")
 
-    print("N bauds: " + str(n_bauds) + " baud_length: " + str(tx_baud_length))
+
 
     if extent == None:
 
@@ -1043,7 +1177,7 @@ def map_radar_array(
             )
         )
     else:
-        print("set fixed extent")
+        pfunc("set fixed extent")
         grid_lat0 = extent["center_lat"]
         grid_lon0 = extent["center_lon"]
         grid_lat0_delta = extent["delta_lat"]
@@ -1068,8 +1202,6 @@ def map_radar_array(
     eval_grid = [grid_lat0_min, grid_lat0_max, grid_lon0_min, grid_lon0_max]
     pfunc("eval grid {0}".format(eval_grid))
 
-    pfunc("TX Frequency: {0}".format(tx_freq))
-    pfunc("TX power: {0} duty cycle: {1}".format(tx_power, tx_duty_cycle))
     frequency = tx_freq[0]
     target_estimation_error = 0.05
     v_doppler_max = 2500.0
