@@ -45,5 +45,3 @@ vv2.2.0
 
 * Fixed bistatic volume factor measurement.
 * Measurement times derived for mapping examples are more reasonable.
-
-
