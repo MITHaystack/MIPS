@@ -8,13 +8,22 @@
 """
 
 from pathlib import Path
-from mips.isr_mapper import map_radar_array
+from mips import map_radar_array
 from mips.isr_plotting import isr_map_plot
-
-from mips.isr_sites import *
+from copy import copy
 
 
 def main():
+
+
+    try:
+        from dask.distributed import Client
+
+        client = Client()
+        print("Dask avalible client info: " + str(client))
+    except:
+        print("Dask not avalible, default to single core.")
+        client = None
     # set up directories
     savedir = Path("mapping").absolute()
     savedir.mkdir(exist_ok=True)
@@ -85,15 +94,15 @@ def main():
 
 
     sim_default = dict(
-        tx_sites=tx_site_list,
-        tx_radars=tx_system_list,
-        rx_sites=rx_site_list,
-        rx_radars=rx_system_list,
+        tx_sites=site_list,
+        tx_radars=system_list,
+        rx_sites=site_list,
+        rx_radars=system_list,
         pair_list='self',
         plasma_parameter_errors=True,
         ngrid=100,
         extent=plot_extent,
-        mpclient=None,
+        mpclient=client,
         pfunc=print,
     )
 

@@ -14,6 +14,15 @@ from mips.isr_plotting import isr_map_plot
 from copy import copy
 
 def main():
+
+    try:
+        from dask.distributed import Client
+
+        client = Client()
+        print("Dask avalible client info: " + str(client))
+    except:
+        print("Dask not avalible, default to single core.")
+        client = None
     # set up directories
     savedir = Path("mapping").absolute()
     savedir.mkdir(exist_ok=True)
@@ -94,7 +103,7 @@ def main():
         t_max=1e5,
         ngrid=120,
         extent=plot_extent,
-        mpclient=None,
+        mpclient=client,
         pfunc=print,
     )
     ionosphere_list = [ionosphere_eregion, ionosphere_fregion, ionosphere_topside]

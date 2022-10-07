@@ -44,6 +44,7 @@ def model_run_1():
     paramvalues = dict(
         peak_power_W=pwr,
         maximum_range_m=800e3,
+        n_bauds=1,
         baud_length_s=1000e-6,
         duty_cycle=0.1,
         efficiency_tx=1.0,
@@ -155,6 +156,7 @@ def model_run_2():
     paramvalues = dict(
         peak_power_W=pwr,
         maximum_range_m=800e3,
+        n_bauds=1,
         baud_length_s=rng * 2 / sc.c,
         excess_rx_noise_K=0.0,
         gain_tx_dB=gn,
@@ -249,6 +251,7 @@ def model_run_3():
     paramvalues = dict(
         peak_power_W=pwr,
         maximum_range_m=800e3,
+        n_bauds=1,
         baud_length_s=rng * 2 / sc.c,
         excess_rx_noise_K=0.0,
         gain_tx_dB=gn,
@@ -348,6 +351,7 @@ def model_run_4():
 
     paramvalues = dict(
         maximum_range_m=800e3,
+        n_bauds = 1,
         baud_length_s=rng * 2 / sc.c,
         excess_rx_noise_K=x_tsys_mono,
         gain_tx_dB=gn,
@@ -466,6 +470,7 @@ def model_run_5():
     x_tsys = 0.0
     paramvalues = dict(
         maximum_range_m=800e3,
+        n_bauds=1,
         baud_length_s=rng * 2 / sc.c,
         duty_cycle=0.1,
         excess_rx_noise_K=x_tsys,
@@ -570,6 +575,7 @@ def model_run_6():
 
     paramvalues = dict(
         peak_power_W=pwr,
+        n_bauds=1,
         baud_length_s=tpulse,
         duty_cycle=duty,
         gain_tx_dB=gn,
@@ -618,6 +624,7 @@ def model_run_6():
 
     paramvalues = dict(
         peak_power_W=pwr,
+        n_bauds=1,
         baud_length_s=tpulse,
         duty_cycle=duty,
         gain_tx_dB=gn,
@@ -661,6 +668,7 @@ def model_run_6():
 
     paramvalues = dict(
         peak_power_W=pwr,
+        n_bauds=1,
         baud_length_s=tpulse,
         duty_cycle=duty,
         gain_tx_dB=gn,
@@ -854,6 +862,7 @@ def model_run_7():
 
     paramvalues = dict(
         peak_power_W=pwr,
+        n_bauds=1,
         baud_length_s=tpulse,
         duty_cycle=duty,
         gain_tx_dB=gn,
@@ -1088,6 +1097,7 @@ def model_run_8():
 
     paramvalues = dict(
         peak_power_W=pwr,
+        n_bauds=1,
         baud_length_s=tpulse,
         duty_cycle=duty,
         gain_tx_dB=gn,
@@ -1270,6 +1280,7 @@ def model_run_9():
         peak_power_W=pwr,
         maximum_range_m=800e3,
         duty_cycle=duty,
+        n_bauds=1,
         baud_length_s=mho_range * 2 / sc.c,
         excess_rx_noise_K=x_tsys,
         gain_tx_dB=gn,
@@ -1317,6 +1328,7 @@ def model_run_9():
         peak_power_W=pwr,
         maximum_range_m=800e3,
         duty_cycle=duty,
+        n_bauds=1,
         baud_length_s=mho_range * 2 / sc.c,
         excess_rx_noise_K=x_tsys,
         gain_tx_dB=gn,
