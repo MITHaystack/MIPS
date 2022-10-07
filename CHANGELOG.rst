@@ -4,6 +4,21 @@ MIPS Change Log
 
 .. current developments
 
+vv2.2.1
+====================
+
+**Added:**
+
+* Sphinx Documentation
+* Added pre-commit configuration.
+
+**Changed:**
+
+* Added Dask clients to example scripts.
+* Updated figures and example data.
+
+
+
 vv2.2.0
 ====================
 
