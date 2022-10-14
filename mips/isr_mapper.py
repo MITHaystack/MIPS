@@ -437,13 +437,9 @@ def isr_array_sim(
 
     lmbda = 2.99792458e8 / tx_frequency
 
-    # tx pulse length, 1 ms
-    tx_pulse_length = 1e-3
-    # smallest integration period
+    # smallest fundamental integration period
     t_int = tx_pulse_length
-    # duty-cycle
-    eff_tx = 1.0
-    eff_rx = 1.0
+
     # bandwidth factor
     bw_fac = 1.0
     # Set up the dimensions for the simulation
@@ -599,9 +595,19 @@ def isr_array_sim(
                     * np.sqrt(np.sum(k_rx * k_rx))
                 )
 
+                # normalized k vector, compute bragg vector
                 k_tx0 = k_tx / np.sqrt(np.dot(k_tx, k_tx))
                 k_rx0 = -k_rx / np.sqrt(np.dot(k_rx, k_rx))
-                k_bragg = (1.0 / lmbda) * (k_rx0 - k_tx0)
+                #k_bragg = (1.0 / lmbda) * (k_rx0 - k_tx0)
+                k_bragg = (k_rx0 - k_tx0)
+
+                #k_tx_n = np.linalg.norm(2*np.pi*k_tx0/lmbda)
+                #k_rx_n = np.linalg.norm(2*np.pi*k_rx0/lmbda)
+                #k_bragg_n = np.linalg.norm(2*np.pi*k_bragg/lmbda)
+
+                #print("k ", k_tx_n, k_rx_n, k_bragg_n)
+                #print("l ", 2*np.pi/k_tx_n, 2*np.pi/k_rx_n, 2*np.pi/k_bragg_n)
+                #print("f ", c.c*k_tx_n/(2*np.pi),c.c*k_rx_n/(2*np.pi),c.c*k_bragg_n/(2*np.pi))
 
                 vel_mat[path_idx, i, j, :] = k_bragg
 
@@ -677,6 +683,7 @@ def isr_array_sim(
                 rx_gain_factors[path_idx, i, j] = rx_gain_factor
 
                 gammas[path_idx, i, j] = gamma
+
                 # dB with -60 dB regularization
                 tx_gain_tmp = 10.0 * np.log10(
                     tx_gain_factor * 10.0 ** (tx_gain[tx_i] / 10.0) + 1e-6
