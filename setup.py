@@ -30,7 +30,7 @@ config = {
     "description": "Millstone IS Performance Simulator",
     "author": "Phil Erickson, Frank Lind, Juha Viernien, John Swoboda, Bill Rideout",
     "url": "https://github.com/MITHaystack/MIPS",
-    "version": "v2.1.0",  # versioneer.get_version(),
+    "version": "v2.2.1",  # versioneer.get_version(),
     # "cmdclass": versioneer.get_cmdclass(),
     "install_requires": req,
     "python_requires": ">=3.0",
