@@ -44,7 +44,8 @@ def model_run_1():
     paramvalues = dict(
         peak_power_W=pwr,
         maximum_range_m=800e3,
-        pulse_length_s=1000e-6,
+        n_bauds=1,
+        baud_length_s=1000e-6,
         duty_cycle=0.1,
         efficiency_tx=1.0,
         efficiency_rx=1.0,
@@ -83,14 +84,16 @@ def model_run_1():
     # save data to disk
     datapath = Path("model_runs")
     datapath.mkdir(exist_ok=True)
-    dataset.to_netcdf(datapath.joinpath("model_run_1.nc"), engine="h5netcdf", invalid_netcdf=True)
+    dataset.to_netcdf(
+        datapath.joinpath("model_run_1.nc"), engine="h5netcdf", invalid_netcdf=True
+    )
     # make the plots
     attrs = dataset.attrs
     lstr = (
         "%.0f km alt\npl=%.0f ms\nne=%.0e m$^{-3}$\n%.0fMW peak @ d=%.0f%%\nTe=%.0f,Ti=%.0f\n$A_{\mathrm{eff}}=%1.0f$ m$^{2}$"
         % (
             attrs["target_to_rx_range_m"] / 1e3,
-            attrs["pulse_length_s"] * 1e3,
+            attrs["baud_length_s"] * 1e3,
             attrs["Ne"],
             attrs["peak_power_W"] / 1e6,
             attrs["duty_cycle"] * 100,
@@ -153,7 +156,8 @@ def model_run_2():
     paramvalues = dict(
         peak_power_W=pwr,
         maximum_range_m=800e3,
-        pulse_length_s=rng * 2 / sc.c,
+        n_bauds=1,
+        baud_length_s=rng * 2 / sc.c,
         excess_rx_noise_K=0.0,
         gain_tx_dB=gn,
         gain_rx_dB=gn,
@@ -187,7 +191,9 @@ def model_run_2():
 
     datapath = Path("model_runs")
     datapath.mkdir(exist_ok=True)
-    dataset.to_netcdf(datapath.joinpath("model_run_2.nc"), engine="h5netcdf", invalid_netcdf=True)
+    dataset.to_netcdf(
+        datapath.joinpath("model_run_2.nc"), engine="h5netcdf", invalid_netcdf=True
+    )
 
     attrs = dataset.attrs
     lstr = (
@@ -196,7 +202,7 @@ def model_run_2():
             attrs["n_elements"],
             attrs["element_pwr"],
             rng / 1e3,
-            attrs["pulse_length_s"] * 1e3,
+            attrs["baud_length_s"] * 1e3,
             attrs["Ne"],
             attrs["peak_power_W"] / 1e6,
             attrs["duty_cycle"] * 100,
@@ -245,7 +251,8 @@ def model_run_3():
     paramvalues = dict(
         peak_power_W=pwr,
         maximum_range_m=800e3,
-        pulse_length_s=rng * 2 / sc.c,
+        n_bauds=1,
+        baud_length_s=rng * 2 / sc.c,
         excess_rx_noise_K=0.0,
         gain_tx_dB=gn,
         gain_rx_dB=gn,
@@ -279,7 +286,9 @@ def model_run_3():
 
     datapath = Path("model_runs")
     datapath.mkdir(exist_ok=True)
-    dataset.to_netcdf(datapath.joinpath("model_run_3.nc"), engine="h5netcdf", invalid_netcdf=True)
+    dataset.to_netcdf(
+        datapath.joinpath("model_run_3.nc"), engine="h5netcdf", invalid_netcdf=True
+    )
 
     duty_max_for_monostatic = 0.2
 
@@ -303,7 +312,7 @@ def model_run_3():
             attrs["n_elements"],
             attrs["element_pwr"],
             rng / 1e3,
-            attrs["pulse_length_s"] * 1e3,
+            attrs["baud_length_s"] * 1e3,
             attrs["Ne"],
             attrs["peak_power_W"] / 1e6,
             attrs["Te"],
@@ -342,7 +351,8 @@ def model_run_4():
 
     paramvalues = dict(
         maximum_range_m=800e3,
-        pulse_length_s=rng * 2 / sc.c,
+        n_bauds=1,
+        baud_length_s=rng * 2 / sc.c,
         excess_rx_noise_K=x_tsys_mono,
         gain_tx_dB=gn,
         gain_rx_dB=gn,
@@ -376,12 +386,16 @@ def model_run_4():
 
     datapath = Path("model_runs")
     datapath.mkdir(exist_ok=True)
-    dataset_m.to_netcdf(datapath.joinpath("model_run_4m.nc"), engine="h5netcdf", invalid_netcdf=True)
+    dataset_m.to_netcdf(
+        datapath.joinpath("model_run_4m.nc"), engine="h5netcdf", invalid_netcdf=True
+    )
 
     paramvalues["excess_rx_noise_K"] = x_tsys_bistat
     paramvalues["monostatic"] = False
     dataset_b = simulate_data(data_dims, coorddict, paramvalues)
-    dataset_b.to_netcdf(datapath.joinpath("model_run_4b.nc"), engine="h5netcdf", invalid_netcdf=True)
+    dataset_b.to_netcdf(
+        datapath.joinpath("model_run_4b.nc"), engine="h5netcdf", invalid_netcdf=True
+    )
 
     # monostatic limit at 5x range
     # This is an assumption about the self clutter distance
@@ -421,7 +435,7 @@ def model_run_4():
             attrs["n_elements"],
             attrs["element_pwr"],
             rng / 1e3,
-            attrs["pulse_length_s"] * 1e3,
+            attrs["baud_length_s"] * 1e3,
             attrs["Ne"],
             attrs["Te"],
             attrs["Ti"],
@@ -456,7 +470,8 @@ def model_run_5():
     x_tsys = 0.0
     paramvalues = dict(
         maximum_range_m=800e3,
-        pulse_length_s=rng * 2 / sc.c,
+        n_bauds=1,
+        baud_length_s=rng * 2 / sc.c,
         duty_cycle=0.1,
         excess_rx_noise_K=x_tsys,
         frequency_Hz=440e6,
@@ -491,7 +506,9 @@ def model_run_5():
 
     datapath = Path("model_runs")
     datapath.mkdir(exist_ok=True)
-    dataset.to_netcdf(datapath.joinpath("model_run_5.nc"), engine="h5netcdf", invalid_netcdf=True)
+    dataset.to_netcdf(
+        datapath.joinpath("model_run_5.nc"), engine="h5netcdf", invalid_netcdf=True
+    )
 
     f, ax = pylab.subplots(2, 1, sharex=True)
 
@@ -500,7 +517,7 @@ def model_run_5():
     attrs = dataset.attrs
     lstr = "%.0f km alt\npl=%.0f ms\nne=%.0e m^-3\n%.0fMW peak\nTe=%.0f,Ti=%.0f" % (
         rng / 1e3,
-        attrs["pulse_length_s"] * 1e3,
+        attrs["baud_length_s"] * 1e3,
         attrs["Ne"],
         total_pwr / 1e6,
         attrs["Te"],
@@ -558,7 +575,8 @@ def model_run_6():
 
     paramvalues = dict(
         peak_power_W=pwr,
-        pulse_length_s=tpulse,
+        n_bauds=1,
+        baud_length_s=tpulse,
         duty_cycle=duty,
         gain_tx_dB=gn,
         gain_rx_dB=gn,
@@ -606,7 +624,8 @@ def model_run_6():
 
     paramvalues = dict(
         peak_power_W=pwr,
-        pulse_length_s=tpulse,
+        n_bauds=1,
+        baud_length_s=tpulse,
         duty_cycle=duty,
         gain_tx_dB=gn,
         gain_rx_dB=gn,
@@ -649,7 +668,8 @@ def model_run_6():
 
     paramvalues = dict(
         peak_power_W=pwr,
-        pulse_length_s=tpulse,
+        n_bauds=1,
+        baud_length_s=tpulse,
         duty_cycle=duty,
         gain_tx_dB=gn,
         gain_rx_dB=gn,
@@ -842,7 +862,8 @@ def model_run_7():
 
     paramvalues = dict(
         peak_power_W=pwr,
-        pulse_length_s=tpulse,
+        n_bauds=1,
+        baud_length_s=tpulse,
         duty_cycle=duty,
         gain_tx_dB=gn,
         gain_rx_dB=gn,
@@ -1076,7 +1097,8 @@ def model_run_8():
 
     paramvalues = dict(
         peak_power_W=pwr,
-        pulse_length_s=tpulse,
+        n_bauds=1,
+        baud_length_s=tpulse,
         duty_cycle=duty,
         gain_tx_dB=gn,
         gain_rx_dB=gn,
@@ -1258,7 +1280,8 @@ def model_run_9():
         peak_power_W=pwr,
         maximum_range_m=800e3,
         duty_cycle=duty,
-        pulse_length_s=mho_range * 2 / sc.c,
+        n_bauds=1,
+        baud_length_s=mho_range * 2 / sc.c,
         excess_rx_noise_K=x_tsys,
         gain_tx_dB=gn,
         gain_rx_dB=gn,
@@ -1282,9 +1305,9 @@ def model_run_9():
     )
     paramvalues["O+"] = 1.0
 
-    coorddict = {"pulse_length_s": tpulse}
+    coorddict = {"baud_length_s": tpulse}
 
-    data_dims = {"pulse_length_s": len(tpulse)}
+    data_dims = {"baud_length_s": len(tpulse)}
     datasetamisr = simulate_data(data_dims, coorddict, paramvalues)
 
     # MISA ISR at 440 MHz (pulsed)
@@ -1305,7 +1328,8 @@ def model_run_9():
         peak_power_W=pwr,
         maximum_range_m=800e3,
         duty_cycle=duty,
-        pulse_length_s=mho_range * 2 / sc.c,
+        n_bauds=1,
+        baud_length_s=mho_range * 2 / sc.c,
         excess_rx_noise_K=x_tsys,
         gain_tx_dB=gn,
         gain_rx_dB=gn,

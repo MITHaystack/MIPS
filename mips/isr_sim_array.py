@@ -40,7 +40,8 @@ def prunedict(cur_dict):
         "calculate_plasma_parameter_errors",
         "peak_power_W",
         "maximum_range_m",
-        "pulse_length_s",
+        "n_bauds",
+        "baud_length_s",
         "duty_cycle",
         "gain_tx_dB",
         "gain_rx_dB",
@@ -70,7 +71,7 @@ def prunedict(cur_dict):
 
 
 def check_dicts(coorddict, paramvalues):
-    """Determines input dicionaries for the main function are filled out correctly.
+    """Determines input dictionaries for the main function are filled out correctly.
 
 
     Parameters
@@ -96,7 +97,8 @@ def check_dicts(coorddict, paramvalues):
     varnames = [
         "peak_power_W",
         "maximum_range_m",
-        "pulse_length_s",
+        "n_bauds",
+        "baud_length_s",
         "duty_cycle",
         "gain_tx_dB",
         "gain_rx_dB",
@@ -159,7 +161,8 @@ def get_default(coordvals):
     default_params = dict(
         peak_power_W=2e6,
         maximum_range_m=800e3,
-        pulse_length_s=1000e-6,
+        n_bauds=1,
+        baud_length_s=1000e-6,
         duty_cycle=0.1,
         efficiency_tx=1.0,
         efficiency_rx=1.0,
@@ -192,12 +195,50 @@ def get_default(coordvals):
     return coorddict, default_params
 
 
-def is_snr_mp(cur_coords,cursimdict):
-    """ """
+def is_snr_mp(cur_coords, cursimdict):
+    """Wraper function for is_snr that gives that passes the coordinate information to stuff everything back in"""
 
     outdata = is_snr(**cursimdict)
 
-    return cur_coords,outdata
+    return cur_coords, outdata
+
+
+def rerunsim(ds, i_el):
+
+    paramvalues = ds.attrs
+    coordds = ds.coords
+    coorddict = coordds.to_dataset().to_dict()["coords"]
+
+    dimdict = ds.dims
+    dimnames = list(dimdict.keys())
+    dimlist = list(dimdict.values())
+    cursimdict = paramvalues.copy()
+    cursimdict["quick_bandwidth_estimate"] = True
+    cursimdict["calculate_plasma_parameter_errors"] = True
+
+    curcoords = np.unravel_index(i_el, dimlist)
+    # go through the coordinates and get all of them.
+    for iname, ival in coorddict.items():
+        curdims = ds[iname].dims
+        # HACK why is this if statement here? Are there coordinates that can be zero length?
+        if len(curdims) == 0:
+            curdims = iname
+        indtuple = [None] * len(curdims)
+        for inum, idim in enumerate(curdims):
+            dim_ind = dimnames.index(idim)
+            indtuple[inum] = curcoords[dim_ind]
+        indtuple = tuple(indtuple)
+        cursimdict[iname] = ds[iname].values[indtuple]
+    # deal with the ion species by getting them into the list format.
+    iondict = {i: cursimdict[i] for i in ionnamelist if i in cursimdict.keys()}
+    cursimdict["ionspecies"], cursimdict["ionfracs"] = get_ion_lists(iondict)
+    cursimdict = prunedict(cursimdict)
+    cursimdict["pfunc"] = print
+
+    outdata = is_snr(**cursimdict)
+
+    return cursimdict, outdata
+
 
 def simulate_data(data_dims, coorddict, paramvalues, mpclient=None, pfunc=print):
     """Creates an xarray data set with results of the simulations
@@ -276,6 +317,7 @@ def simulate_data(data_dims, coorddict, paramvalues, mpclient=None, pfunc=print)
         # go through the coordinates and get all of them.
         for iname, ival in coorddict.items():
             curdims = ds[iname].dims
+            # HACK why is this if statement here? Are there coordinates that can be zero length?
             if len(curdims) == 0:
                 curdims = iname
             indtuple = [None] * len(curdims)
@@ -288,11 +330,9 @@ def simulate_data(data_dims, coorddict, paramvalues, mpclient=None, pfunc=print)
         iondict = {i: cursimdict[i] for i in ionnamelist if i in cursimdict.keys()}
         cursimdict["ionspecies"], cursimdict["ionfracs"] = get_ion_lists(iondict)
         cursimdict = prunedict(cursimdict)
-        cursimdict['pfunc'] = pfunc
-        # for i in ionnamelist:
-        #     if i in cursimdict.keys():
-        #         del cursimdict[i]
-        # # Run the model for the current input
+        cursimdict["pfunc"] = pfunc
+
+        # Run the model for the current input
         if mpclient is None:
             outdata = is_snr(**cursimdict)
 
@@ -310,7 +350,8 @@ def simulate_data(data_dims, coorddict, paramvalues, mpclient=None, pfunc=print)
 
     if not mpclient is None:
         from dask.distributed import progress
-        futures = mpclient.map(is_snr_mp,curcoords_list,cursimdict_list)
+
+        futures = mpclient.map(is_snr_mp, curcoords_list, cursimdict_list)
         progress(futures)
         results = mpclient.gather(futures)
         for ires in results:

@@ -15,8 +15,9 @@ import scipy.constants as c
 
 from .coord import geodetic_to_az_el_r, azel_ecef, geodetic2ecef
 from .isr_performance import is_snr, iri2016
-from .isr_sites import build_site_lists, build_radar_lists
+from .configtools import build_site_lists, build_radar_lists
 from .isr_sim_array import simulate_data
+
 # from mpl_toolkits.basemap import Basemap, shiftgrid
 import xarray as xr
 import iri2016 as iri
@@ -25,6 +26,26 @@ import iri2016 as iri
 
 
 def llh2ecef(lat, lon, alt):
+    """Latitude, longitude, height to ecef.
+
+    Parameters
+    ----------
+    lat : float
+        Latitude in degrees.
+    lon : float
+        Longitude in degrees.
+    alt : float
+        Altitude in meters.
+
+    Returns
+    -------
+    x : float
+        ECEF x in meters.
+    y : float
+        ECEF y in meters.
+    z : float
+        ECEF z in meters.
+    """
     # see http://www.mathworks.de/help/toolbox/aeroblks/llatoecefpositionp.html
 
     rad = np.float64(6378137.0)  # Radius of the Earth (in meters)
@@ -32,7 +53,7 @@ def llh2ecef(lat, lon, alt):
     cosLat = np.cos(lat)
     sinLat = np.sin(lat)
     FF = (1.0 - f) ** 2
-    C = 1 / np.sqrt(cosLat ** 2 + FF * sinLat ** 2)
+    C = 1 / np.sqrt(cosLat**2 + FF * sinLat**2)
     S = C * FF
 
     x = (rad * C + alt) * cosLat * np.cos(lon)
@@ -97,9 +118,7 @@ def azel2thetaphi(az, el, rotate=False):
             az = 360.0 - az
 
     theta = (
-        np.arccos(
-            np.cos(np.pi / 180.0 * el) * np.cos(np.pi / 180.0 * az)
-        )
+        np.arccos(np.cos(np.pi / 180.0 * el) * np.cos(np.pi / 180.0 * az))
         * 180.0
         / np.pi
     )
@@ -108,9 +127,7 @@ def azel2thetaphi(az, el, rotate=False):
         phi = 0.0
     else:
         phi = (
-            np.arctan(
-                np.tan(np.pi / 180.0 * el) / np.sin(np.pi / 180.0 * az)
-            )
+            np.arctan(np.tan(np.pi / 180.0 * el) / np.sin(np.pi / 180.0 * az))
             * 180.0
             / np.pi
         )
@@ -190,7 +207,6 @@ def planar_gain_mask(
     bb_az_angle = np.arccos(bb_az_prod)
     bb_el_angle = np.arccos(bb_el_prod)
 
-
     # the mask is the cosine of the angle between the beam and boresite vectors
     # handles both the azimuth and elevation angles due to vector projection
     mask = bb_prod
@@ -248,7 +264,7 @@ def planar_gain_mask(
             um = u0 + mx * 1.0 / (2.0 * lattice_spacing[0])
             vn = v0 + nx * 1.0 / (2.0 * lattice_spacing[1])
 
-            d = np.sqrt(um ** 2 + vn ** 2)
+            d = np.sqrt(um**2 + vn**2)
 
             if d <= 1.0:
 
@@ -285,8 +301,7 @@ def combine_velocity_errors(
     vel_mat, fov_mask, vel_error_stdev=10.0, max_error=100.0, min_error=0.0
 ):
     """
-    This method takes the velocity matrix k vector representation and the velocity errors,
-    Returns the latitude, longitude array of combined errors.
+    This method takes the velocity matrix k vector representation and the velocity errors. Returns the latitude, longitude array of combined errors.
 
     """
 
@@ -296,7 +311,6 @@ def combine_velocity_errors(
 
     vel_err = np.zeros([n_lat, n_lon])
 
-
     for lat_i in range(n_lat):
         for lon_i in range(n_lon):
             A = []
@@ -305,11 +319,9 @@ def combine_velocity_errors(
                     A.append(vel_mat[path_i, lat_i, lon_i, :])
             if len(A) > 2:
                 A = np.array(A)
-                Sinv = np.diag(np.repeat(1.0 / (vel_error_stdev ** 2.0), len(A)))
+                Sinv = np.diag(np.repeat(1.0 / (vel_error_stdev**2.0), len(A)))
                 try:
-                    Spost = np.linalg.inv(
-                        np.dot(np.dot(np.transpose(A), Sinv), A)
-                    )
+                    Spost = np.linalg.inv(np.dot(np.dot(np.transpose(A), Sinv), A))
                     vel_err[lat_i, lon_i] = np.sqrt(np.max(np.diag(Spost)))
                 except:
                     vel_err[lat_i, lon_i] = np.nan
@@ -331,10 +343,7 @@ def combine_velocity_errors(
 
 
 """
-    The ISR array simulator takes a set of parameters to simulate a network of IS
-    radars. The parameters of the array are provided as vectors for each item.
-    The pair list controls which pairs of transmit and receive are computed and
-    combined into the final measurement speed estmiate.
+    The ISR array simulator takes a set of parameters to simulate a network of IS radars. The parameters of the array are provided as vectors for each item.  The pair list controls which pairs of transmit and receive are computed and combined into the final measurement speed estmiate.
 """
 
 
@@ -354,7 +363,8 @@ def isr_array_sim(
     tx_frequency,
     tx_peak_power,
     tx_duty_cycle,
-    tx_pulse_length,
+    n_bauds,
+    tx_baud_length,
     rx_type,
     rx_boresite,
     rx_mask_limits,
@@ -371,43 +381,79 @@ def isr_array_sim(
     plasma_parameter_errors,
     ionosphere,
     mpclient=None,
-    pfunc=print
+    pfunc=print,
 ):
     """Compute ISR performance for one or more TX, RX pairs over a given elevation threshold defined. Once all of the inputs are ready they are then put into the xarray based simulator tool.
 
     Use IRI if indicated. For IRI the times are in Universal Time (Zulu). A local or NASA cgi version of IRI can be used.
 
-        tx_lat=np.array([-12.367718]),
-        tx_lon=np.array([-75.078307]),
-        tx_alt=np.array([0.0]),
-        rx_lat=np.array([-12.367718]),
-        rx_lon=np.array([-75.078307]),
-        rx_alt=np.array([0.0]),
-        tx_el_mask=np.array([0.0]),
-        rx_el_mask=np.array([0.0]),
-        tx_type=["planar_array"],
-        tx_boresite=np.array([[0.0, 0.0]]),
-        tx_mask_limits=np.array([[-180.0, 180.0, 0.0, 90.0]]),
-        tx_gain=[43.0],
-        tx_frequency=440e6,
-        tx_peak_power=[2e6],
-        tx_duty_cycle=[0.1],
-        tx_pulse_length=1e-3,
-        rx_type=["planar_array"],
-        rx_boresite=np.array([[0.0, 0.0]]),
-        rx_mask_limits=np.array([[-180.0, 180.0, 0.0, 90.0]]),
-        rx_gain=[43.0],
-        rx_tsys_type=["fixed_low"],
-        rx_extra_T_sys=[50.0],
-        pair_list=[],
-        eval_grid=[-90, 90, 0, 360],
-        n_grid_cells=150,
-        max_range=800e3,
-        v_doppler_max=2500.0,
-        t_max=60.0,
-        target_estimation_error=0.05,
-        plasma_parameter_errors=False,
-        ionosphere={
+    Parameters
+    ----------
+    tx_lat : array_like
+        Listing of latitudes of Tx sites.
+    tx_lon : array_like
+        Listing of longitudes of Tx sites.
+    tx_alt : array_like
+        Listing of altitudes of Tx sites.
+    rx_lat : array_like
+        Listing of latitudes of Rx sites.
+    rx_lon : array_like
+        Listing of longitudes of Rx sites.
+    rx_alt : array_like
+        Listing of altitudes of Rx sites.
+    tx_el_masking : array_like
+        Elevation mask for the Tx.
+    rx_el_masking : array_like
+        Elevation mask for the Rx.
+    tx_type : list
+        Transmit antenna type.
+    tx_boresite : list
+        Az and el location of boresite.
+    tx_mask_limites : array_like
+        Limits of the tx antennas in degrees. [min_az, max_az,min_el, max_el]
+    tx_gain : list
+        Tx antenna gain in dB.
+    tx_frequency : float
+        Transmitter center frequency in Hz.
+    tx_peak_power : list
+        Tx peak power in W.
+    tx_duty_cycle : lists
+        Tx duty cyle.
+    n_bauds : int
+        Number of bauds in the tx pulse.
+    tx_baud_length : float
+        Length of each baud in seconds.
+    rx_type : list
+        Tx antenna type.
+    rx_boresite : list
+        Az and el location of boresite.
+    rx_mask_limites : array_like
+        Limits of the rx antennas in degrees. [min_az, max_az,min_el, max_el]
+    rx_gain : list
+        Rx antenna gain in dB.
+    rx_tsys_type : list
+        Type of tsys behavior.
+    rx_extra_T_sys : list
+        Extra tsys in deg kelvin.
+    pair_list : list
+        Tx Rx pairs to be evaluated.
+    eval_grid : list
+        Latitude longitude grid to be evaluated over. [min_lat, max_lat, min_lon, max_lon].
+    n_grid_cells : int
+        Number of cells per dimension to evaluate over.
+    max_range : float
+        Maximum range that will be evaluated.
+    v_doppler_max : float
+        Maximum Doppler used for simulation.
+    t_max : float
+        Longest measurement time considered.
+    target_estimation_error : float
+        Desired error in target to set measurement speed.
+    plasma_parameter_errors : bool
+        If true will also determine plasma parameter errors.
+    ionosphere : dict
+        How the ionosphere will be handled.
+        example = {
             "use_iri": False,
             "iri_type": "local",
             "iri_time": None,
@@ -415,9 +461,16 @@ def isr_array_sim(
             "N_e": 2e11,
             "T_e": 1000.0,
             "T_i": 800.0,
-        },
+        }
+    mpclient : Dask.Client
+        Multiprocessing client from dask. If None then standard processing is used.
+    pfunc : func
+        Print function. defaults to standard print.
 
-
+    Returns
+    -------
+    dataset : xarray.Dataset
+        Final data set from simulation.
     """
     n_tx = len(tx_lat)
     n_rx = len(rx_lat)
@@ -437,16 +490,22 @@ def isr_array_sim(
 
     lmbda = 2.99792458e8 / tx_frequency
 
-    # smallest fundamental integration period
-    t_int = tx_pulse_length
+    # duty-cycle
+    eff_tx = 1.0 # we should pass this through from the user level
+    eff_rx = 1.0 # we should pass this through from the user level
 
+    # smallest fundamental integration period
+    t_int = tx_pulse_length / n_bauds
+    
     # bandwidth factor
-    bw_fac = 1.0
+    bw_fac = 1.0 # we should pass this through from the user level
+    
     # Set up the dimensions for the simulation
     data_dims = dict(pairs=n_paths, lat=n_grid_cells, long=n_grid_cells)
     # Terms that will be constant through out simulation
     const_dict = dict(
-        pulse_length_s=tx_pulse_length,
+        baud_length_s=tx_baud_length,
+        n_bauds=n_bauds,
         maximum_range_m=max_range,
         efficiency_tx=1.0,
         efficiency_rx=1.0,
@@ -461,7 +520,6 @@ def isr_array_sim(
         tx_lon=np.array(tx_lon),
         rx_lat=np.array(rx_lat),
         rx_lon=np.array(rx_lon),
-        bistatic_volume_factor=1.0,
         quick_bandwidth_estimate=True,
     )
     const_dict["O+"] = 1.0
@@ -474,7 +532,6 @@ def isr_array_sim(
         # time in ISO8601 format (simplified)
         # time is GMT!
         t = datetime.datetime.strptime(ionosphere["iri_time"], "%Y-%m-%dT%H:%M:%SZ")
-
 
         iri_jf = np.zeros(50)
         iri_oa = np.zeros(100)
@@ -540,7 +597,9 @@ def isr_array_sim(
             tx_idx[ind] = int(ipair[0])
             rx_idx[ind] = int(ipair[1])
     else:
-        tx_mat, rx_mat = np.meshgrid(np.arange(n_tx,dtype=int), np.arange(n_rx,dtype=int))
+        tx_mat, rx_mat = np.meshgrid(
+            np.arange(n_tx, dtype=int), np.arange(n_rx, dtype=int)
+        )
         tx_idx = tx_mat.flatten()
         rx_idx = rx_mat.flatten()
 
@@ -569,7 +628,7 @@ def isr_array_sim(
     dvel_mat = np.zeros([n_paths, len(lats), len(longs)])
     vel_mat = np.zeros([n_paths, len(lats), len(longs), 3])
     fov_mask = np.zeros([len(lats), len(longs)])
-
+    bistatic_volume = np.zeros([n_paths, len(lats), len(longs)])
     # HACK: Can loose loop if coordinate transforms work for arrays.
     # Loop through all of the locations and pairs
     for i, lat in enumerate(lats):
@@ -590,17 +649,21 @@ def isr_array_sim(
                 target_ecef = geodetic2ecef(lat, lon, tgt_alt)
                 k_tx = target_ecef - tx_ecef
                 k_rx = target_ecef - rx_ecef
-                inv_angle = np.sum(k_tx * k_rx) / (
-                    np.sqrt(np.sum(k_tx * k_tx))
-                    * np.sqrt(np.sum(k_rx * k_rx))
-                )
+
+                # vector magnitiude
+                k_txm = np.sqrt(np.dot(k_tx, k_tx))
+                k_rxm = np.sqrt(np.dot(k_rx, k_rx))
+
+                # get the cos of the scattering angle
+                inv_angle = np.dot(k_tx, k_rx) / (k_txm * k_rxm)
 
                 # normalized k vector, compute bragg vector
-                k_tx0 = k_tx / np.sqrt(np.dot(k_tx, k_tx))
-                k_rx0 = -k_rx / np.sqrt(np.dot(k_rx, k_rx))
-                #k_bragg = (1.0 / lmbda) * (k_rx0 - k_tx0)
+                # just the vector direction
+                k_tx0 = k_tx / k_txm
+                k_rx0 = -k_rx / k_txm
                 k_bragg = (k_rx0 - k_tx0)
-
+                
+                # extra debug check with lambda scaled values
                 #k_tx_n = np.linalg.norm(2*np.pi*k_tx0/lmbda)
                 #k_rx_n = np.linalg.norm(2*np.pi*k_rx0/lmbda)
                 #k_bragg_n = np.linalg.norm(2*np.pi*k_bragg/lmbda)
@@ -617,6 +680,10 @@ def isr_array_sim(
                     gamma = 0.0
                 else:
                     gamma = 180.0 * np.arccos(inv_angle) / np.pi
+
+                # See appendix in [1] R. de Elía and I. Zawadzki, “Sidelobe Contamination in Bistatic Radars,” Journal of Atmospheric and Oceanic Technology, vol. 17, no. 10, pp. 1313–1329, Oct. 2000, doi: 10.1175/1520-0426(2000)017<1313:SCIBR>2.0.CO;2.
+
+                bistatic_volume[path_idx, i, j] = np.cos(np.deg2rad(gamma / 2)) ** (-2)
 
                 tx_range_mat[path_idx, i, j] = r_tx
                 rx_range_mat[path_idx, i, j] = r_rx
@@ -729,8 +796,8 @@ def isr_array_sim(
     coorddict["gain_tx_dB"] = (dimttuple, tx_gain_mat)
     coorddict["gain_rx_dB"] = (dimttuple, rx_gain_mat)
     coorddict["tx_target_rx_angle"] = (dimttuple, gammas)
-
-    dataset = simulate_data(data_dims, coorddict, const_dict,mpclient,pfunc)
+    coorddict["bistatic_volume_factor"] = (dimttuple, bistatic_volume)
+    dataset = simulate_data(data_dims, coorddict, const_dict, mpclient, pfunc)
 
     # Combine all of the errors over lat and long
     mtime = dataset["measurement_time"].values
@@ -755,13 +822,13 @@ def isr_array_sim(
     fov_mask[np.where(delta_t_mat_tot == np.nan)] = 0.0
 
     if plasma_parameter_errors:
-        tx_mask = tx_gain_factors==0.
-        rx_mask = rx_gain_factors==0.
-        err_mask = np.logical_or(tx_mask,rx_mask)
-        dataset['dNe'].values[err_mask] = np.nan
-        dataset['dTi'].values[err_mask] = np.nan
-        dataset['dTe'].values[err_mask] = np.nan
-        dataset["dV"].values[err_mask] = 0.
+        tx_mask = tx_gain_factors == 0.0
+        rx_mask = rx_gain_factors == 0.0
+        err_mask = np.logical_or(tx_mask, rx_mask)
+        dataset["dNe"].values[err_mask] = np.nan
+        dataset["dTi"].values[err_mask] = np.nan
+        dataset["dTe"].values[err_mask] = np.nan
+        dataset["dV"].values[err_mask] = 0.0
         # arbitrary upper bounds for the moment
         pfunc("WARNING: Arbitrary upper bounds for parameter errors")
 
@@ -784,9 +851,21 @@ def isr_array_sim(
     return xr.merge([dataset, errds])
 
 
-
 def pair_list_self(tx_sites):
-    """radar network self pair list"""
+    """Creates radar network self pair list
+
+    Parameters
+    ----------
+    tx_sites : list
+        List of transmitter sites.
+    rx_sites : list
+        List of receiver sites.
+
+    Returns
+    -------
+    pair_list : list
+        List of Tx Rx pairs.
+    """
 
     pair_list = []
 
@@ -797,7 +876,21 @@ def pair_list_self(tx_sites):
 
 
 def pair_list_cross(tx_sites, rx_sites):
-    """radar network cross pair list"""
+    """Creates a radar network cross pair list
+
+    Parameters
+    ----------
+    tx_sites : list
+        List of transmitter sites.
+    rx_sites : list
+        List of receiver sites.
+
+    Returns
+    -------
+    pair_list : list
+        List of Tx Rx pairs.
+
+    """
 
     pair_list = []
 
@@ -809,12 +902,26 @@ def pair_list_cross(tx_sites, rx_sites):
 
 
 def pair_list_mimo(tx_sites, rx_sites):
-    """radar network mimo list"""
+    """Creates radar network mimo list, i.e. cartesian product.
+
+    Parameters
+    ----------
+    tx_sites : list
+        List of transmitter sites.
+    rx_sites : list
+        List of receiver sites.
+
+    Returns
+    -------
+    pair_list : list
+        List of Tx Rx pairs.
+    """
     txv = list(range(len(tx_sites)))
     rxv = list(range(len(rx_sites)))
     pair_list = list(itertools.product(txv, rxv))
 
     return pair_list
+
 
 def annotate_standard(
     alt_m,
@@ -827,6 +934,36 @@ def annotate_standard(
     T_e,
     target_estimation_error,
 ):
+    """
+    Create the standard annotation strings for the plots.
+
+    Parameters
+    ----------
+    alt_m : float
+        Altitude in meters.
+    tx_gain : list
+        Transmitter antenna gain dB.
+    rx_elevation_threshold : list
+        Elevation threshold for receivers in degrees.
+    tx_power : list
+        Tx power in W
+    t_int : Float
+        Pulse length in s.
+    N_e : float
+        Electron density in m^-3
+    T_i : float
+        Ion temperature in K.
+    T_e : float
+        Electron temperature in K
+    target_estimation_error : float
+        Desired estimation error.
+
+    Returns
+    ------
+    annotate : string
+        Annotation for plots
+    """
+
     annotate1 = (
         "Alt %1.2f km\nGain %1.0f dB\nElevation threshold = %1.2f deg above horizon\n"
         % (alt_m / 1e3, tx_gain[0], rx_elevation_threshold[0])
@@ -847,12 +984,16 @@ def annotate_standard(
 
     return annotate
 
+
 def map_radar_array(
     tname,
     tx_sites,
     tx_radars,
     rx_sites,
     rx_radars,
+    ipp=None,
+    n_bauds=1,
+    tx_baud_length=1e-3,
     pair_list=None,
     plasma_parameter_errors=False,
     ionosphere=None,
@@ -860,11 +1001,71 @@ def map_radar_array(
     ngrid=100,
     extent=None,
     mpclient=None,
-    pfunc=print
+    pfunc=print,
 ):
-    """ "
-    Map an radar array for IS radar performance using the provide set of sites, radar types, parameters, ionospheric conditions, and limits.
+    """
+    Map an radar array for IS radar performance using the provide set of sites, radar types, parameters, ionospheric conditions, and limits. This function uses sets up the neccesary arrays and ionosphere conditions for isr_array_sim is called in this function.
 
+    Parameters
+    ----------
+    tname : str
+        Name of the map being run.
+    tx_sites : list
+        List of names of the tx sites.
+    tx_radars : list
+        Names of the tx radars.
+    rx_sites : list
+        List of names of the rx sites.
+    rx_radars : list
+        Names of the rx radars.
+    ipp : float
+        Interpulse period in seconds.
+    n_bauds : int
+        Number of bauds on the transmit pulse
+    tx_baud_length : float
+        Length of bauds of the mode.
+    pair_list: list
+        List of transmitter receiver pairs as tuples of list elements, e.g. [(0,0), (0,1)].
+    plasma_parameter_errors : bool
+        Bool to run plasma parameter error estimates.
+    ionosphere : dict
+        Dictionary that determines the ionospheric conditions.
+    t_max : float
+        Maximum amount of integration time that will be used for experiment to reach a specific parameter resolution.
+    ngrid : int
+        Number of one side of grid points that this will be evalued over.
+    extent : dict
+        Dictionary containing to determine the latitude and logitude extent. Keys for the location center point are center_lat, center_lon; and keys for sampling size: delta_lat, delta_lon.
+    mpclient : dask.distributed.client
+        Dask client to perform multiprocessing operations.
+    pfunc : func
+        Desired print function to use, use with logger module.
+
+    Returns
+    -------
+    map_info : xarray.Dataset
+        Results of simulation in xarray format.
+        Data variables
+        snr : float
+            signal-to-noise ratio linear scale, unitless
+        power_aperture_to_temperature : float
+            peak power aperture to temperature ratio, MW m^2 / K
+        avg_power_aperture_to_temperature : float
+            average power aperture to temperature ratio, MW m^2 / K
+        wavelength_to_debye_length_ratio : float
+            ratio of radar wavelength to Debye length for provided plasma parameters and radar frequency, unitless
+        echo_bandwidth : float
+            estimated signal bandwidth, Hz
+        measurement_time : float
+            measurement time required to achieve the requested statistical estimation error, s
+        dNe: float (optional)
+            expected plasma density error m^-3
+        dTi : float (optional)
+            Expected ion temperature error in k.
+        dTe : float (optional)
+            Expected electron temperature error in k.
+        dV : float (optional)
+            Expected velocity error in m/s.
     """
 
     # pfunc the name of the map that is being run
@@ -905,7 +1106,13 @@ def map_radar_array(
     tx_gain = np.array(tx_gain)
     tx_mask_limits = np.array(steering_mask)
     tx_power = np.array(tx_power)
-    tx_duty_cycle = np.array(tx_duty_cycle)
+    if ipp is None:
+
+        tx_duty_cycle = np.array(tx_duty_cycle)
+        t_int = n_bauds * tx_baud_length / tx_duty_cycle
+    else:
+        t_int = ipp
+        tx_duty_cycle = [n_bauds * tx_baud_length / ipp] * len(tx_duty_cycle)
 
     # rx radar parameters
     (
@@ -927,6 +1134,9 @@ def map_radar_array(
     rx_tsys_type = rx_tsys_type
     rx_extra_T_sys = np.array(xtra_tsys)
 
+    pfunc("N bauds: " + str(n_bauds) + " baud_length: " + str(tx_baud_length))
+    pfunc("TX Frequency: {0}".format(tx_freq))
+    pfunc("TX power: {0} duty cycle: {1}".format(tx_power, tx_duty_cycle))
     # ionospheric parameters for non IRI based map static conditions
 
     if ionosphere == None:
@@ -935,9 +1145,6 @@ def map_radar_array(
         T_e = 1000.0
         T_i = 800.0
         iri_time = "fixed parameters"  # '2012-10-22T0:00:00Z'
-        tx_pulse_length = 1e-3
-        t_int = tx_pulse_length
-
 
         ionosphere = {
             "use_iri": False,
@@ -955,11 +1162,7 @@ def map_radar_array(
         N_e = ionosphere["N_e"]
         T_e = ionosphere["T_e"]
         T_i = ionosphere["T_i"]
-        iri_time = ionosphere["iri_time"]
-        tx_pulse_length = ionosphere["pulse_length"]
-        t_int = tx_pulse_length
-
-    print("pulse_length: " + str(tx_pulse_length))
+        iri_time = ionosphere.get("iri_time", "fixed parameters")
 
     if extent == None:
 
@@ -977,17 +1180,23 @@ def map_radar_array(
         grid_lon0_maxdelta = np.max(tx_lon) - grid_lon0
         grid_lon0_delta = np.max([grid_lon0_mindelta, grid_lon0_maxdelta, 10.0]) + 10.0
 
-        pfunc("grid info: {0}, {1}, {2}, {3}".format(grid_lat0, grid_lon0, grid_lat0_delta, grid_lon0_delta))
+        pfunc(
+            "grid info: {0}, {1}, {2}, {3}".format(
+                grid_lat0, grid_lon0, grid_lat0_delta, grid_lon0_delta
+            )
+        )
     else:
-        print("set fixed extent")
+        pfunc("set fixed extent")
         grid_lat0 = extent["center_lat"]
         grid_lon0 = extent["center_lon"]
         grid_lat0_delta = extent["delta_lat"]
         grid_lon0_delta = extent["delta_lon"]
 
-        pfunc("grid info: {0}, {1}, {2}, {3}".format(grid_lat0, grid_lon0, grid_lat0_delta, grid_lon0_delta))
-
-
+        pfunc(
+            "grid info: {0}, {1}, {2}, {3}".format(
+                grid_lat0, grid_lon0, grid_lat0_delta, grid_lon0_delta
+            )
+        )
 
     # note these offsets are arbitrary and can end limiting the evaluation
     # extent to be too narrow for some cases (e.g. high altitudes).
@@ -1000,10 +1209,8 @@ def map_radar_array(
     grid_lon0_max = np.min([grid_lon0 + grid_lon0_delta, 179.9])
 
     eval_grid = [grid_lat0_min, grid_lat0_max, grid_lon0_min, grid_lon0_max]
-    pfunc("eval grid {0}".format( eval_grid))
+    pfunc("eval grid {0}".format(eval_grid))
 
-    pfunc("TX Frequency: {0}".format(tx_freq))
-    pfunc("TX power: {0} duty cycle: {1}".format(tx_power, tx_duty_cycle))
     frequency = tx_freq[0]
     target_estimation_error = 0.05
     v_doppler_max = 2500.0
@@ -1024,7 +1231,7 @@ def map_radar_array(
     elif type(pair_list) is list:
         pfunc("external pair list provided")
 
-    pfunc("pair list:", pair_list)
+    pfunc("pair list: " + str(pair_list))
 
     map_info = isr_array_sim(
         tx_lat=tx_lat,
@@ -1049,7 +1256,8 @@ def map_radar_array(
         tx_frequency=frequency,
         tx_peak_power=tx_power,
         tx_duty_cycle=tx_duty_cycle,
-        tx_pulse_length=tx_pulse_length,
+        n_bauds=n_bauds,
+        tx_baud_length=tx_baud_length,
         eval_grid=eval_grid,
         t_max=t_max,
         target_estimation_error=target_estimation_error,
@@ -1059,19 +1267,19 @@ def map_radar_array(
         max_range=1300e3,
         ionosphere=ionosphere,
         mpclient=mpclient,
-        pfunc=pfunc
+        pfunc=pfunc,
     )
 
-    map_info.attrs['map_title'] = "%s (%s)" % (tname, iri_time)
-    map_info.attrs['annotate_txt'] = annotate_standard(
-            alt_m,
-            tx_gain,
-            rx_elevation_threshold,
-            tx_power,
-            t_int,
-            N_e,
-            T_i,
-            T_e,
-            target_estimation_error,
-        )
+    map_info.attrs["map_title"] = "%s (%s)" % (tname, iri_time)
+    map_info.attrs["annotate_txt"] = annotate_standard(
+        alt_m,
+        tx_gain,
+        rx_elevation_threshold,
+        tx_power,
+        t_int,
+        N_e,
+        T_i,
+        T_e,
+        target_estimation_error,
+    )
     return map_info

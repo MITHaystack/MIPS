@@ -1,0 +1,120 @@
+radars:
+- name: millstone_misa_upgrade
+  ant_type: dish
+  az_rotation: 0.0
+  el_tilt: 0.0
+  steering_mask:
+  - 0.0
+  - 360.0
+  - 4.5
+  - 90.0
+  freq: 440000000.0
+  tx_gain: 43.281
+  rx_gain: 43.281
+  tx_power: 2000000.0
+  duty: 0.06
+  tsys_type: fixed_zero
+  xtra_tsys: 63.0578
+  notes: MISA Upgrade - 2.0 MW, fixed effective Tsys=85K
+- name: millstone_zenith_upgrade
+  ant_type: dish
+  az_rotation: 0.0
+  el_tilt: 0.0
+  steering_mask:
+  - 188.0
+  - 189.0
+  - 88.0
+  - 89.0
+  freq: 440000000.0
+  tx_gain: 47.78
+  rx_gain: 47.78
+  tx_power: 2000000.0
+  duty: 0.06
+  tsys_type: fixed_zero
+  xtra_tsys: 78.0578
+  notes: Zenith Upgrade - 2.0 MW, fixed effective Tsys=100K
+- name: amisr_full_notilt
+  ant_type: planar_array
+  az_rotation: 0.0
+  el_tilt: 0.0
+  steering_mask:
+  - 0.0
+  - 360.0
+  - 0.0
+  - 38.0
+  freq: 449000000.0
+  tx_gain: 42.0
+  rx_gain: 42.0
+  tx_power: 2000000.0
+  duty: 0.1
+  tsys_type: fixed_high
+  xtra_tsys: 50.0
+  notes: AMISR
+- name: amisr_typical_notilt
+  ant_type: planar_array
+  az_rotation: 0.0
+  el_tilt: 0.0
+  steering_mask:
+  - 0.0
+  - 360.0
+  - 0.0
+  - 38.0
+  freq: 449000000.0
+  tx_gain: 40.9
+  rx_gain: 41.5
+  tx_power: 1600000.0
+  duty: 0.1
+  tsys_type: fixed_high
+  xtra_tsys: 50.0
+  notes: AMISR
+- name: heliosphere_hf
+  ant_type: planar_array
+  az_rotation: 0.0
+  el_tilt: 0.0
+  steering_mask:
+  - 0.0
+  - 360.0
+  - 0.0
+  - 60.0
+  freq: 30000000.0
+  tx_gain: 41.5
+  rx_gain: 41.5
+  tx_power: 5077000.0
+  duty: 1.0
+  tsys_type: fixed_medium
+  xtra_tsys: 0.0
+  notes: 4062 TX, 6093 RX elements
+- name: eiscat3d_tx
+  ant_type: planar_array
+  az_rotation: 0.0
+  el_tilt: 0.0
+  steering_mask:
+  - 0.0
+  - 360.0
+  - 0.0
+  - 60.0
+  freq: 223000000.0
+  tx_gain: 43.0
+  rx_gain: 22.0
+  tx_power: 5000000.0
+  duty: 0.2
+  tsys_type: fixed_high
+  xtra_tsys: 50.0
+  notes: notional E3D T/R site
+- name: eiscat3d_rx
+  ant_type: planar_array
+  az_rotation: 0.0
+  el_tilt: 0.0
+  steering_mask:
+  - 0.0
+  - 360.0
+  - 0.0
+  - 60.0
+  freq: 223000000.0
+  tx_gain: 43.0
+  rx_gain: 22.0
+  tx_power: 0.0
+  duty: 0.0
+  tsys_type: fixed_low
+  xtra_tsys: 0.0
+  notes: notional E3D RX site

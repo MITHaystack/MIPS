@@ -1,0 +1,35 @@
+sim:
+  tname: E3D Multistatic E-region Paper
+  tx_sites: [skibotn]
+  tx_radars: [eiscat3d_tx]
+  rx_sites: [skibotn,kaiseniemi,karesuvanto]
+  rx_radars: [eiscat3d_tx,eiscat3d_rx,eiscat3d_rx]
+  pair_list: mimo
+  n_bauds: 50
+  tx_baud_length: 0.000001
+  ipp: .002
+  plasma_parameter_errors: True
+  ngrid: 120
+  ionosphere:
+    use_iri: False
+    alt_m: 100000.0
+    N_e: 100000000000.0
+    T_e: 400
+    T_i: 300
+  extent:
+    center_lat: 68.82
+    center_lon: 20.41
+    delta_lat: 20.0
+    delta_lon: 30.0
+
+map:
+  map_parameters: [speed,dNe,dTi,dTe,dV]
+  dval_max: [10000.0,0.1,20.0,20.0,30.0]
+  map_zoom: .2
+  range_contours: [0]
+  map_fname: e3d_multistatic_E-region_compare.png
+  map_type: normal
+  annotate: True
+  legend: True
+  vmin: .1
+  vmax: -1.
