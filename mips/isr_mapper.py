@@ -490,15 +490,16 @@ def isr_array_sim(
 
     lmbda = 2.99792458e8 / tx_frequency
 
-    # tx pulse length, 1 ms
-    # tx_baud_length = 1e-3
-    # smallest integration period
-    t_int = n_bauds * tx_baud_length
     # duty-cycle
-    eff_tx = 1.0
-    eff_rx = 1.0
+    eff_tx = 1.0 # we should pass this through from the user level
+    eff_rx = 1.0 # we should pass this through from the user level
+
+    # smallest fundamental integration period
+    t_int = tx_pulse_length / n_bauds
+    
     # bandwidth factor
-    bw_fac = 1.0
+    bw_fac = 1.0 # we should pass this through from the user level
+    
     # Set up the dimensions for the simulation
     data_dims = dict(pairs=n_paths, lat=n_grid_cells, long=n_grid_cells)
     # Terms that will be constant through out simulation
@@ -648,19 +649,28 @@ def isr_array_sim(
                 target_ecef = geodetic2ecef(lat, lon, tgt_alt)
                 k_tx = target_ecef - tx_ecef
                 k_rx = target_ecef - rx_ecef
-                # vector magnetiude
+
+                # vector magnitiude
                 k_txm = np.sqrt(np.dot(k_tx, k_tx))
                 k_rxm = np.sqrt(np.dot(k_rx, k_rx))
 
                 # get the cos of the scattering angle
                 inv_angle = np.dot(k_tx, k_rx) / (k_txm * k_rxm)
-                #     np.sqrt(np.sum(k_tx * k_tx))
-                #     * np.sqrt(np.sum(k_rx * k_rx))
-                # )
-                # Normed vector
+
+                # normalized k vector, compute bragg vector
+                # just the vector direction
                 k_tx0 = k_tx / k_txm
                 k_rx0 = -k_rx / k_txm
-                k_bragg = (1.0 / lmbda) * (k_rx0 - k_tx0)
+                k_bragg = (k_rx0 - k_tx0)
+                
+                # extra debug check with lambda scaled values
+                #k_tx_n = np.linalg.norm(2*np.pi*k_tx0/lmbda)
+                #k_rx_n = np.linalg.norm(2*np.pi*k_rx0/lmbda)
+                #k_bragg_n = np.linalg.norm(2*np.pi*k_bragg/lmbda)
+
+                #print("k ", k_tx_n, k_rx_n, k_bragg_n)
+                #print("l ", 2*np.pi/k_tx_n, 2*np.pi/k_rx_n, 2*np.pi/k_bragg_n)
+                #print("f ", c.c*k_tx_n/(2*np.pi),c.c*k_rx_n/(2*np.pi),c.c*k_bragg_n/(2*np.pi))
 
                 vel_mat[path_idx, i, j, :] = k_bragg
 
@@ -740,6 +750,7 @@ def isr_array_sim(
                 rx_gain_factors[path_idx, i, j] = rx_gain_factor
 
                 gammas[path_idx, i, j] = gamma
+
                 # dB with -60 dB regularization
                 tx_gain_tmp = 10.0 * np.log10(
                     tx_gain_factor * 10.0 ** (tx_gain[tx_i] / 10.0) + 1e-6

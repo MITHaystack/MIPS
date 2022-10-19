@@ -21,7 +21,7 @@ import madrigalWeb.madrigalWeb
 import ISRSpectrum
 import iri2016.base as iri2016_base  # pip install - written by Michael Hirsch; avoiding name conflict with old method
 
-version_str = "MIPS V2.1.0"
+version_str = "MIPS V2.2.1"
 
 AMUDICT = {16: "O+", 30: "NO+", 28: "N2+", 32: "O2+", 14: "N+", 1: "H+", 4: "He+"}
 
@@ -516,14 +516,13 @@ def is_bandwidth_estimate(
     ion_mass = ISRSpectrum.getionmass(ionspecies[i_ion])
     v_ion_acoustic = (((sc.k * Ti) / (ion_mass * sc.m_p)) * (1.0 + Te / Ti)) ** 0.5
 
-    # Doppler shift due to i-a velocity (apply factor of 2 to catch
-    # wings of I-A scatter)
+    # Doppler shift due to i-a velocity
     # take into account bistatic Bragg length
     h_lambda = wavelength / (
         2.0 * numpy.cos((numpy.pi * tx_target_rx_angle / 180.0) / 2.0)
     )
 
-    # factor of 2 because upgoing and downgoing acoustic wave?
+    # normal radar doppler shift for the ion acoustic speed and effective scattering wavelength
     line_shift = numpy.array(2.0 * v_ion_acoustic / h_lambda)
 
     # flow shift - for bulk line of sight Doppler shifts
@@ -886,8 +885,25 @@ def is_snr(
     gain_rx = 10 ** (gain_rx_dB / 10.0)
 
     # RX and TX beamwidth in degrees
-    # I think this assumes a ~0.7 efficient parabolic dish and does a
+
+    # Start with a sphere having 41253 square degrees (i.e 4pi * (57.29577951 deg/rad)^2)
+    #
     # gain = area of sphere / area of beam pattern calculation
+
+    # With a circular beam shape being assumed. Approximate beam pattern from
+    # gain value as being at 0.707 for the half power point from the gain
+    # maximum. Then apply a loss of the energy to the sidelobes from the main beam.
+    #
+    # The result is about 45% of the radiated power going through the half power
+    # beamwidth. This is good for parabolic antennas and is about the best we
+    # can estimate without an antenna pattern model. Overall this
+    # is a bit on the conservative side for many some types of apertures. Array
+    # apertures do better with taper but that trades off having additional T/R
+    # elements relative to the far field gain of the aperture.
+
+    # Note that this is separate from the efficiency of the aperture due to other
+    # factors such as blockage.
+
     rx_beamwidth = (27000.0 / gain_rx) ** 0.5
     tx_beamwidth = (27000.0 / gain_tx) ** 0.5
 
@@ -904,26 +920,38 @@ def is_snr(
         baud_gain = 1
     else:
         baud_gain = n_bauds * (n_bauds - 1) / 2.0
-    # Illuminated volume (approximation from Peebles, 5.7-19)
-    # if we are modeling a bi-static path, include a penalty factor for mismatched volumes
-    volume = (
-        bistatic_volume_factor
-        * math.pi
-        * tx_to_target_range_m**2
-        * rad_tx_beamwidth**2
-        * range_resolution_m
-        / (16.0 * math.log(2.0))
-    )
+   
+    # handle mis-matched beams
+    if (rad_tx_beamwidth <= rad_rx_beamwidth):
 
-    # We assume here that the RX and TX beamwidths can be matched. If the TX
-    # array has higher resolution than the RX array we can encompass the scattering
-    # region of the TX beam at the cost of additional noise. If the RX is
-    # higher resolution we can always spoil the beam digitally to match the TX.
-    #
-    # For the moment we are assuming that the TX sets the scattering volume and
-    # that we will be nearly matched. This needs to be done properly in the
-    # analysis at some point and also include bi-static scattering angles.
-    # see Howells and Benyon 1978 or similar.
+        # Illuminated volume (approximation from Peebles, 5.7-19)
+        # if we are modeling a bi-static path, include a penalty factor for mismatched volumes
+        volume = (
+            bistatic_volume_factor
+            * math.pi
+            * tx_to_target_range_m ** 2
+            * rad_tx_beamwidth ** 2
+            * range_resolution_m
+            / (16.0 * math.log(2.0))
+        )
+        
+        # wider RX beam will increase noise collected relative to signal, lowering SNR
+        noise_scaling = rad_rx_beamwidth / rad_tx_beamwidth
+
+    else:
+        # Illuminated volume (approximation from Peebles, 5.7-19)
+        # if we are modeling a bi-static path, include a penalty factor for mismatched volumes
+        volume = (
+            bistatic_volume_factor
+            * math.pi
+            * tx_to_target_range_m ** 2
+            * rad_rx_beamwidth ** 2
+            * range_resolution_m
+            / (16.0 * math.log(2.0))
+        )
+
+        # wider TX beam than RX is just diluted by the volume above but collects no extra noise
+        noise_scaling = 1.0
 
     # fundamental electron radius and scattering cross-section
     electron_radius = sc.e**2.0 * sc.mu_0 / (4.0 * sc.pi * sc.m_e)
@@ -935,8 +963,9 @@ def is_snr(
 
     # LNA system temperature, K
     lna_temperature = rx_temperature_model(frequency_Hz, tsys_type)
-    # Sky temperature, K
-    sky_temperature = sky_temperature_model(frequency_Hz)
+    # Sky temperature, K ; scale for mis-matched beams
+    sky_temperature = sky_temperature_model(frequency_Hz) * noise_scaling
+
     # Total effective system temperature including user addon, K
     system_temperature = lna_temperature + sky_temperature + excess_rx_noise_K
 
