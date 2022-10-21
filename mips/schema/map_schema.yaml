@@ -20,7 +20,6 @@ simobj:
   ngrid: int(min=0,required=False)
   extent: include('extentobj',required=False)
 
-
 ionosphereobj:
   use_iri: bool()
   iri_type: str(required=False)
