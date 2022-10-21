@@ -10,14 +10,16 @@ simobj:
   rx_sites: list(str())
   rx_radars: list(str())
   n_bauds: num(required=False)
-  tx_baud_length: num(required=False)
+  tx_pulse_length: num(required=False)
   ipp: num(required=False)
   pair_list: any(enum('cross','self','mimo'),list())
   plasma_parameter_errors: bool()
+  mtime_estimate_method: enum('str','mracf',required=False)
   ionosphere: include('ionosphereobj',required=False)
   tmax: num(min=0,required=False)
   ngrid: int(min=0,required=False)
   extent: include('extentobj',required=False)
+
 
 ionosphereobj:
   use_iri: bool()

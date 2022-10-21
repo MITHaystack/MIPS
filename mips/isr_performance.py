@@ -746,7 +746,7 @@ def is_calculate_plasma_parameter_errors(
 def is_snr(
     peak_power_W,
     maximum_range_m,
-    baud_length_s,
+    pulse_length_ns,
     n_bauds,
     duty_cycle,
     gain_tx_dB,
@@ -771,6 +771,7 @@ def is_snr(
     ionfracs,
     quick_bandwidth_estimate,
     calculate_plasma_parameter_errors,
+    mtime_estimate_method,
     pfunc=print,
 ):
 
@@ -782,8 +783,8 @@ def is_snr(
         Average TX Power, W
     maximum_range_m : Float
         maximum range that produces measureable signal, m
-    baud_length_s : float
-        radar transmit baud length, s
+    pulse_length_ns : int
+        radar transmit pulse length, nanoseconds
     n_bauds : int
         Number of bauds in pulse
     duty_cycle float : float
@@ -826,8 +827,8 @@ def is_snr(
         Fractions of each ionspecies. Sum must equal 1.
     quick_bandwidth_estimate : bool
         if True (default), a single ion is assumed with AMU = ion mass 1. If False, a full 2-ion IS spectral calculation is used for bandwidth estimation.
-
-
+    mtime_estimate_method : str
+        String to determine measurement time estimation method. Can be std, mracf.
 
     Returns
     -------
@@ -852,7 +853,7 @@ def is_snr(
     Previous default parameters:
         peak_power_W=1e6,
         maximum_range_m=600e3,
-        baud_length_s=500e-6,
+        pulse_length_ns=500000,
         duty_cycle=0.05,
         gain_tx_dB=42.0,
         gain_rx_dB=42.0,
@@ -877,6 +878,10 @@ def is_snr(
         quick_bandwidth_estimate=True,
         calculate_plasma_parameter_errors=True
     """
+
+    baud_length_s = 1e-9*float(pulse_length_ns)/n_bauds
+    p_length = pulse_length_ns*1e-9
+
     # radar wavelength
     wavelength = sc.c / frequency_Hz
 
@@ -911,7 +916,7 @@ def is_snr(
     rad_rx_beamwidth = rx_beamwidth * math.pi / 180.0
     rad_tx_beamwidth = tx_beamwidth * math.pi / 180.0
 
-    # range resolution is determined by pulse length
+    # range resolution is determined by baud length
     range_resolution_m = sc.c / 2.0 * baud_length_s
 
     # baud_gain for measurement time
@@ -920,7 +925,7 @@ def is_snr(
         baud_gain = 1
     else:
         baud_gain = n_bauds * (n_bauds - 1) / 2.0
-   
+
     # handle mis-matched beams
     if (rad_tx_beamwidth <= rad_rx_beamwidth):
 
@@ -934,7 +939,7 @@ def is_snr(
             * range_resolution_m
             / (16.0 * math.log(2.0))
         )
-        
+
         # wider RX beam will increase noise collected relative to signal, lowering SNR
         noise_scaling = rad_rx_beamwidth / rad_tx_beamwidth
 
@@ -1090,8 +1095,7 @@ def is_snr(
 
     # decorrelation time of the incoherent scatter process.
     decorrelation_time = 1.0 / (2.0 * line_shift)
-    # pulse length
-    p_lenth = baud_length_s * n_bauds
+
     # how many incoherent scatter samples per second
     if monostatic:
         # time of flight to maximum range must be considered as a limiting factor to how often we can
@@ -1099,21 +1103,19 @@ def is_snr(
         minimum_observation_interval = 2.0 * maximum_range_m / sc.c
         sample_rate = 1.0 / numpy.maximum(
             minimum_observation_interval,
-            numpy.maximum(decorrelation_time / duty_cycle, p_lenth / duty_cycle),
+            numpy.maximum(decorrelation_time / duty_cycle, p_length / duty_cycle),
         )
     else:
         sample_rate = 1.0 / numpy.maximum(
-            decorrelation_time / duty_cycle, p_lenth / duty_cycle
+            decorrelation_time / duty_cycle, p_length / duty_cycle
         )
 
     #
     # take into account self noise and the fact that we can trade signal for
     # independent samples of the incoherent scatter radar process
     #
-    # find out how to divide our transmit pulse to obtain minimal measurement time,
-    # also known as the Mr. ACF trick.
-    # M. P. Sulzer, “A phase modulation technique for a sevenfold statistical improvement in incoherent scatter data‐taking,” Radio Science, vol. 21, no. 4, pp. 737–744, Jul. 1986, doi: 10.1029/RS021i004p00737.
 
+    #standard method of measurement
     s_factor = 1.0
     mtime = (s / s_factor + n) ** 2.0 / (
         baud_gain
@@ -1123,18 +1125,24 @@ def is_snr(
         * (s / s_factor) ** 2.0
     )
 
-    for s_factor in numpy.arange(2.0, 10.0):
-        mtime = numpy.minimum(
-            mtime,
-            (s / s_factor + n) ** 2.0
-            / (
-                baud_gain
-                * s_factor
-                * sample_rate
-                * estimation_error_stdev**2.0
-                * (s / s_factor) ** 2.0
-            ),
-        )
+
+    # find out how to divide our transmit pulse to obtain minimal measurement time,
+    # also known as the Mr. ACF trick.
+    # M. P. Sulzer, “A phase modulation technique for a sevenfold statistical improvement in incoherent scatter data‐taking,” Radio Science, vol. 21, no. 4, pp. 737–744, Jul. 1986, doi: 10.1029/RS021i004p00737.
+
+    if mtime_estimate_method=='mracf':
+        for s_factor in numpy.arange(2.0, 10.0):
+            mtime = numpy.minimum(
+                mtime,
+                (s / s_factor + n) ** 2.0
+                / (
+                    baud_gain
+                    * s_factor
+                    * sample_rate
+                    * estimation_error_stdev**2.0
+                    * (s / s_factor) ** 2.0
+                ),
+            )
 
     if calculate_plasma_parameter_errors:
         (plasma_parameter_errors) = is_calculate_plasma_parameter_errors(

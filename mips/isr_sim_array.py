@@ -41,7 +41,7 @@ def prunedict(cur_dict):
         "peak_power_W",
         "maximum_range_m",
         "n_bauds",
-        "baud_length_s",
+        "pulse_length_ns",
         "duty_cycle",
         "gain_tx_dB",
         "gain_rx_dB",
@@ -61,6 +61,7 @@ def prunedict(cur_dict):
         "bistatic_volume_factor",
         "ionspecies",
         "ionfracs",
+        "mtime_estimate_method"
     ]
     inputkeys = list(cur_dict.keys())
     for ikey in inputkeys:
@@ -98,7 +99,7 @@ def check_dicts(coorddict, paramvalues):
         "peak_power_W",
         "maximum_range_m",
         "n_bauds",
-        "baud_length_s",
+        "pulse_length_s",
         "duty_cycle",
         "gain_tx_dB",
         "gain_rx_dB",
@@ -116,6 +117,7 @@ def check_dicts(coorddict, paramvalues):
         "maximum_bulk_doppler",
         "tx_target_rx_angle",
         "bistatic_volume_factor",
+        "mtime_estimate_method"
     ]
 
     allnames = att_names + varnames
@@ -162,7 +164,7 @@ def get_default(coordvals):
         peak_power_W=2e6,
         maximum_range_m=800e3,
         n_bauds=1,
-        baud_length_s=1000e-6,
+        pulse_length_ns=1000000,
         duty_cycle=0.1,
         efficiency_tx=1.0,
         efficiency_rx=1.0,
@@ -184,6 +186,7 @@ def get_default(coordvals):
         gain_rx_dB=42.0,
         frequency_Hz=440e6,
         excess_rx_noise_K=0.0,
+        mtime_estimate_method='std'
     )
 
     default_params["O+"] = 1.0

@@ -364,7 +364,7 @@ def isr_array_sim(
     tx_peak_power,
     tx_duty_cycle,
     n_bauds,
-    tx_baud_length,
+    tx_pulse_length,
     rx_type,
     rx_boresite,
     rx_mask_limits,
@@ -380,6 +380,7 @@ def isr_array_sim(
     target_estimation_error,
     plasma_parameter_errors,
     ionosphere,
+    mtime_estimate_method,
     mpclient=None,
     pfunc=print,
 ):
@@ -421,8 +422,8 @@ def isr_array_sim(
         Tx duty cyle.
     n_bauds : int
         Number of bauds in the tx pulse.
-    tx_baud_length : float
-        Length of each baud in seconds.
+    tx_pulse_length : int
+        Length of each pulse in nanoseconds.
     rx_type : list
         Tx antenna type.
     rx_boresite : list
@@ -462,6 +463,8 @@ def isr_array_sim(
             "T_e": 1000.0,
             "T_i": 800.0,
         }
+    mtime_estimate_method : str
+        String to determine measurement time estimation method. Can be std, mracf.
     mpclient : Dask.Client
         Multiprocessing client from dask. If None then standard processing is used.
     pfunc : func
@@ -496,15 +499,15 @@ def isr_array_sim(
 
     # smallest fundamental integration period
     t_int = tx_pulse_length / n_bauds
-    
+
     # bandwidth factor
     bw_fac = 1.0 # we should pass this through from the user level
-    
+
     # Set up the dimensions for the simulation
     data_dims = dict(pairs=n_paths, lat=n_grid_cells, long=n_grid_cells)
     # Terms that will be constant through out simulation
     const_dict = dict(
-        baud_length_s=tx_baud_length,
+        pulse_length_ns=tx_pulse_length,
         n_bauds=n_bauds,
         maximum_range_m=max_range,
         efficiency_tx=1.0,
@@ -521,6 +524,7 @@ def isr_array_sim(
         rx_lat=np.array(rx_lat),
         rx_lon=np.array(rx_lon),
         quick_bandwidth_estimate=True,
+        mtime_estimate_method=mtime_estimate_method#'std'
     )
     const_dict["O+"] = 1.0
 
@@ -662,7 +666,7 @@ def isr_array_sim(
                 k_tx0 = k_tx / k_txm
                 k_rx0 = -k_rx / k_txm
                 k_bragg = (k_rx0 - k_tx0)
-                
+
                 # extra debug check with lambda scaled values
                 #k_tx_n = np.linalg.norm(2*np.pi*k_tx0/lmbda)
                 #k_rx_n = np.linalg.norm(2*np.pi*k_rx0/lmbda)
@@ -993,13 +997,14 @@ def map_radar_array(
     rx_radars,
     ipp=None,
     n_bauds=1,
-    tx_baud_length=1e-3,
+    tx_pulse_length=1e-3,
     pair_list=None,
     plasma_parameter_errors=False,
     ionosphere=None,
     t_max=1e5,
     ngrid=100,
     extent=None,
+    mtime_estimate_method='std',
     mpclient=None,
     pfunc=print,
 ):
@@ -1018,12 +1023,12 @@ def map_radar_array(
         List of names of the rx sites.
     rx_radars : list
         Names of the rx radars.
-    ipp : float
-        Interpulse period in seconds.
+    ipp : int
+        Interpulse period in nanoseconds.
     n_bauds : int
         Number of bauds on the transmit pulse
-    tx_baud_length : float
-        Length of bauds of the mode.
+    tx_pulse_length : int
+        Length of pulse of the mode in nanoseconds.
     pair_list: list
         List of transmitter receiver pairs as tuples of list elements, e.g. [(0,0), (0,1)].
     plasma_parameter_errors : bool
@@ -1036,6 +1041,8 @@ def map_radar_array(
         Number of one side of grid points that this will be evalued over.
     extent : dict
         Dictionary containing to determine the latitude and logitude extent. Keys for the location center point are center_lat, center_lon; and keys for sampling size: delta_lat, delta_lon.
+    mtime_estimate_method : str
+        String to determine measurement time estimation method. Can be std, mracf.
     mpclient : dask.distributed.client
         Dask client to perform multiprocessing operations.
     pfunc : func
@@ -1109,10 +1116,10 @@ def map_radar_array(
     if ipp is None:
 
         tx_duty_cycle = np.array(tx_duty_cycle)
-        t_int = n_bauds * tx_baud_length / tx_duty_cycle
+        t_int = tx_pulse_length / tx_duty_cycle
     else:
         t_int = ipp
-        tx_duty_cycle = [n_bauds * tx_baud_length / ipp] * len(tx_duty_cycle)
+        tx_duty_cycle = [float(tx_pulse_length) / ipp] * len(tx_duty_cycle)
 
     # rx radar parameters
     (
@@ -1133,8 +1140,8 @@ def map_radar_array(
     rx_mask_limits = np.array(steering_mask)
     rx_tsys_type = rx_tsys_type
     rx_extra_T_sys = np.array(xtra_tsys)
-
-    pfunc("N bauds: " + str(n_bauds) + " baud_length: " + str(tx_baud_length))
+    baud_len_s = 1e-9*float(tx_pulse_length)/n_bauds
+    pfunc("N bauds: " + str(n_bauds) + " baud length: " + str(baud_len_s))
     pfunc("TX Frequency: {0}".format(tx_freq))
     pfunc("TX power: {0} duty cycle: {1}".format(tx_power, tx_duty_cycle))
     # ionospheric parameters for non IRI based map static conditions
@@ -1257,7 +1264,7 @@ def map_radar_array(
         tx_peak_power=tx_power,
         tx_duty_cycle=tx_duty_cycle,
         n_bauds=n_bauds,
-        tx_baud_length=tx_baud_length,
+        tx_pulse_length=tx_pulse_length,
         eval_grid=eval_grid,
         t_max=t_max,
         target_estimation_error=target_estimation_error,
@@ -1266,6 +1273,7 @@ def map_radar_array(
         n_grid_cells=ngrid,
         max_range=1300e3,
         ionosphere=ionosphere,
+        mtime_estimate_method=mtime_estimate_method,
         mpclient=mpclient,
         pfunc=pfunc,
     )

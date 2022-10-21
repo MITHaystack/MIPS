@@ -6,10 +6,11 @@ sim:
   rx_radars: [eiscat3d_tx,eiscat3d_rx,eiscat3d_rx]
   pair_list: mimo
   n_bauds: 1
-  tx_baud_length: 0.00048
-  ipp: .0082
+  tx_pulse_length: 480000
+  ipp: 8200000
   plasma_parameter_errors: True
   ngrid: 120
+  mtime_estimate_method: mracf
   ionosphere:
     use_iri: False
     alt_m: 300000.0

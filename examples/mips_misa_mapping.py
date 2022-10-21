@@ -57,7 +57,7 @@ def main():
         "T_e": 300.0,
         "T_i": 300.0,
     }
-    mode_eregion = dict(n_bauds=13, tx_baud_length=30e-6, ipp=0.0065)
+    mode_eregion = dict(n_bauds=13, tx_pulse_length=390000, ipp=6500000)
 
     ionosphere_fregion = {
         "name": "F-region",
@@ -70,7 +70,7 @@ def main():
         "T_e": 2000.0,
         "T_i": 1200.0,
     }
-    mode_fregion = dict(n_bauds=1, tx_baud_length=480e-6, ipp=0.008)
+    mode_fregion = dict(n_bauds=1, tx_pulse_length=480000, ipp=8000000)
 
     ionosphere_topside = {
         "name": "topside",
@@ -83,7 +83,7 @@ def main():
         "T_e": 2700.0,
         "T_i": 2000.0,
     }
-    mode_topside = dict(n_bauds=1, tx_baud_length=1000e-6, ipp=0.017)
+    mode_topside = dict(n_bauds=1, tx_pulse_length=1000000, ipp=17000000)
 
     sim_default = dict(
         tx_sites=site_list,
@@ -94,6 +94,7 @@ def main():
         plasma_parameter_errors=True,
         ngrid=100,
         extent=plot_extent,
+        mtime_estimate_method='mracf',
         mpclient=client,
         pfunc=print,
     )

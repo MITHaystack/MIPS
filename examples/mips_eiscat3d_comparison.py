@@ -29,14 +29,18 @@ def make_mips_data():
     ne1 = np.logspace(10.5, 12, 20)
     range_res = np.array([100, 500, 1000, 1500, 2000])
     b_lengths = 2 * range_res / sc.c
-    n_bauds = np.ceil(5e-4 / b_lengths)
-    duty = 5e-4 / 2e-3
+
+    plen_ns = 500000
+    plen = float(plen_ns)*1e-9
+    n_bauds = np.ceil(plen/ b_lengths)
+    duty = plen/ 2e-3
     bulk_dop = (sc.c / (f_c * 4)) * (1 / b_lengths)
 
     paramvalues = dict(
         frequency_Hz=230e6,
         peak_power_W=5e6,
         maximum_range_m=400e3,
+        pulse_length_ns=plen_ns,
         duty_cycle=duty,
         efficiency_tx=1.0,
         efficiency_rx=1.0,
@@ -56,13 +60,13 @@ def make_mips_data():
         bistatic_volume_factor=1.0,
         quick_bandwidth_estimate=True,
         calculate_plasma_parameter_errors=False,
+        mtime_estimate_method='std'
     )
     paramvalues["NO+"] = 0.5
     paramvalues["O2+"] = 0.5
 
     coorddict = {
         "Ne": ne1,
-        "baud_length_s": ("range_res", b_lengths),
         "maximum_bulk_doppler": ("range_res", bulk_dop),
         "n_bauds": ("range_res", n_bauds),
         "range_res": range_res,

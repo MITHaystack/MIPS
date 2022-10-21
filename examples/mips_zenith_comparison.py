@@ -89,7 +89,7 @@ def model_run_7():
     pwr = md["power"][0] * 1e3
     gn = 49.72
 
-    tpulse = 480e-6
+    tpulse = 480000
 
     duty = 0.053872
     eff_tx = 0.51  # empirically determined by SNR model-to-data match
@@ -120,7 +120,8 @@ def model_run_7():
 
     paramvalues = dict(
         peak_power_W=pwr,
-        pulse_length_s=tpulse,
+        n_bauds=1,
+        pulse_length_ns=tpulse,
         duty_cycle=duty,
         gain_tx_dB=gn,
         gain_rx_dB=gn,
@@ -136,6 +137,7 @@ def model_run_7():
         tx_target_rx_angle=0.0,
         bistatic_volume_factor=1.0,
         quick_bandwidth_estimate=False,
+        mtime_estimate_method='mracf',
         calculate_plasma_parameter_errors=False,
     )
     paramvalues["O+"] = 1.0
