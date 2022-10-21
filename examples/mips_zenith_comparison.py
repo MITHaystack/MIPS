@@ -137,7 +137,7 @@ def model_run_7():
         tx_target_rx_angle=0.0,
         bistatic_volume_factor=1.0,
         quick_bandwidth_estimate=False,
-        mtime_estimate_method='mracf',
+        mtime_estimate_method="mracf",
         calculate_plasma_parameter_errors=False,
     )
     paramvalues["O+"] = 1.0

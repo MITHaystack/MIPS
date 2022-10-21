@@ -879,8 +879,8 @@ def is_snr(
         calculate_plasma_parameter_errors=True
     """
 
-    baud_length_s = 1e-9*float(pulse_length_ns)/n_bauds
-    p_length = pulse_length_ns*1e-9
+    baud_length_s = 1e-9 * float(pulse_length_ns) / n_bauds
+    p_length = pulse_length_ns * 1e-9
 
     # radar wavelength
     wavelength = sc.c / frequency_Hz
@@ -927,15 +927,15 @@ def is_snr(
         baud_gain = n_bauds * (n_bauds - 1) / 2.0
 
     # handle mis-matched beams
-    if (rad_tx_beamwidth <= rad_rx_beamwidth):
+    if rad_tx_beamwidth <= rad_rx_beamwidth:
 
         # Illuminated volume (approximation from Peebles, 5.7-19)
         # if we are modeling a bi-static path, include a penalty factor for mismatched volumes
         volume = (
             bistatic_volume_factor
             * math.pi
-            * tx_to_target_range_m ** 2
-            * rad_tx_beamwidth ** 2
+            * tx_to_target_range_m**2
+            * rad_tx_beamwidth**2
             * range_resolution_m
             / (16.0 * math.log(2.0))
         )
@@ -949,8 +949,8 @@ def is_snr(
         volume = (
             bistatic_volume_factor
             * math.pi
-            * tx_to_target_range_m ** 2
-            * rad_rx_beamwidth ** 2
+            * tx_to_target_range_m**2
+            * rad_rx_beamwidth**2
             * range_resolution_m
             / (16.0 * math.log(2.0))
         )
@@ -1115,7 +1115,7 @@ def is_snr(
     # independent samples of the incoherent scatter radar process
     #
 
-    #standard method of measurement
+    # standard method of measurement
     s_factor = 1.0
     mtime = (s / s_factor + n) ** 2.0 / (
         baud_gain
@@ -1125,12 +1125,11 @@ def is_snr(
         * (s / s_factor) ** 2.0
     )
 
-
     # find out how to divide our transmit pulse to obtain minimal measurement time,
     # also known as the Mr. ACF trick.
     # M. P. Sulzer, “A phase modulation technique for a sevenfold statistical improvement in incoherent scatter data‐taking,” Radio Science, vol. 21, no. 4, pp. 737–744, Jul. 1986, doi: 10.1029/RS021i004p00737.
 
-    if mtime_estimate_method=='mracf':
+    if mtime_estimate_method == "mracf":
         for s_factor in numpy.arange(2.0, 10.0):
             mtime = numpy.minimum(
                 mtime,

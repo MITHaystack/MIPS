@@ -99,7 +99,7 @@ def main():
         ngrid=120,
         extent=plot_extent,
         mpclient=client,
-        mtime_estimate_method='mracf',
+        mtime_estimate_method="mracf",
         pfunc=print,
     )
     ionosphere_list = [ionosphere_eregion, ionosphere_fregion, ionosphere_topside]

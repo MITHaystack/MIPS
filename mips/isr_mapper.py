@@ -494,14 +494,14 @@ def isr_array_sim(
     lmbda = 2.99792458e8 / tx_frequency
 
     # duty-cycle
-    eff_tx = 1.0 # we should pass this through from the user level
-    eff_rx = 1.0 # we should pass this through from the user level
+    eff_tx = 1.0  # we should pass this through from the user level
+    eff_rx = 1.0  # we should pass this through from the user level
 
     # smallest fundamental integration period
     t_int = tx_pulse_length / n_bauds
 
     # bandwidth factor
-    bw_fac = 1.0 # we should pass this through from the user level
+    bw_fac = 1.0  # we should pass this through from the user level
 
     # Set up the dimensions for the simulation
     data_dims = dict(pairs=n_paths, lat=n_grid_cells, long=n_grid_cells)
@@ -524,7 +524,7 @@ def isr_array_sim(
         rx_lat=np.array(rx_lat),
         rx_lon=np.array(rx_lon),
         quick_bandwidth_estimate=True,
-        mtime_estimate_method=mtime_estimate_method#'std'
+        mtime_estimate_method=mtime_estimate_method,  #'std'
     )
     const_dict["O+"] = 1.0
 
@@ -665,16 +665,16 @@ def isr_array_sim(
                 # just the vector direction
                 k_tx0 = k_tx / k_txm
                 k_rx0 = -k_rx / k_txm
-                k_bragg = (k_rx0 - k_tx0)
+                k_bragg = k_rx0 - k_tx0
 
                 # extra debug check with lambda scaled values
-                #k_tx_n = np.linalg.norm(2*np.pi*k_tx0/lmbda)
-                #k_rx_n = np.linalg.norm(2*np.pi*k_rx0/lmbda)
-                #k_bragg_n = np.linalg.norm(2*np.pi*k_bragg/lmbda)
+                # k_tx_n = np.linalg.norm(2*np.pi*k_tx0/lmbda)
+                # k_rx_n = np.linalg.norm(2*np.pi*k_rx0/lmbda)
+                # k_bragg_n = np.linalg.norm(2*np.pi*k_bragg/lmbda)
 
-                #print("k ", k_tx_n, k_rx_n, k_bragg_n)
-                #print("l ", 2*np.pi/k_tx_n, 2*np.pi/k_rx_n, 2*np.pi/k_bragg_n)
-                #print("f ", c.c*k_tx_n/(2*np.pi),c.c*k_rx_n/(2*np.pi),c.c*k_bragg_n/(2*np.pi))
+                # print("k ", k_tx_n, k_rx_n, k_bragg_n)
+                # print("l ", 2*np.pi/k_tx_n, 2*np.pi/k_rx_n, 2*np.pi/k_bragg_n)
+                # print("f ", c.c*k_tx_n/(2*np.pi),c.c*k_rx_n/(2*np.pi),c.c*k_bragg_n/(2*np.pi))
 
                 vel_mat[path_idx, i, j, :] = k_bragg
 
@@ -1004,7 +1004,7 @@ def map_radar_array(
     t_max=1e5,
     ngrid=100,
     extent=None,
-    mtime_estimate_method='std',
+    mtime_estimate_method="std",
     mpclient=None,
     pfunc=print,
 ):
@@ -1140,7 +1140,7 @@ def map_radar_array(
     rx_mask_limits = np.array(steering_mask)
     rx_tsys_type = rx_tsys_type
     rx_extra_T_sys = np.array(xtra_tsys)
-    baud_len_s = 1e-9*float(tx_pulse_length)/n_bauds
+    baud_len_s = 1e-9 * float(tx_pulse_length) / n_bauds
     pfunc("N bauds: " + str(n_bauds) + " baud length: " + str(baud_len_s))
     pfunc("TX Frequency: {0}".format(tx_freq))
     pfunc("TX power: {0} duty cycle: {1}".format(tx_power, tx_duty_cycle))

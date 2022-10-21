@@ -475,7 +475,7 @@ def model_run_5():
     paramvalues = dict(
         maximum_range_m=800e3,
         n_bauds=1,
-        pulse_length_ns=int(1e9*rng * 2 / sc.c,
+        pulse_length_ns=int(1e9*rng * 2 / sc.c),
         duty_cycle=0.1,
         excess_rx_noise_K=x_tsys,
         frequency_Hz=440e6,

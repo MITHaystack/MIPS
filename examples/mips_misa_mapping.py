@@ -94,7 +94,7 @@ def main():
         plasma_parameter_errors=True,
         ngrid=100,
         extent=plot_extent,
-        mtime_estimate_method='mracf',
+        mtime_estimate_method="mracf",
         mpclient=client,
         pfunc=print,
     )

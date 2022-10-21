@@ -31,9 +31,9 @@ def make_mips_data():
     b_lengths = 2 * range_res / sc.c
 
     plen_ns = 500000
-    plen = float(plen_ns)*1e-9
-    n_bauds = np.ceil(plen/ b_lengths)
-    duty = plen/ 2e-3
+    plen = float(plen_ns) * 1e-9
+    n_bauds = np.ceil(plen / b_lengths)
+    duty = plen / 2e-3
     bulk_dop = (sc.c / (f_c * 4)) * (1 / b_lengths)
 
     paramvalues = dict(
@@ -60,7 +60,7 @@ def make_mips_data():
         bistatic_volume_factor=1.0,
         quick_bandwidth_estimate=True,
         calculate_plasma_parameter_errors=False,
-        mtime_estimate_method='std'
+        mtime_estimate_method="std",
     )
     paramvalues["NO+"] = 0.5
     paramvalues["O2+"] = 0.5

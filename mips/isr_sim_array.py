@@ -61,7 +61,7 @@ def prunedict(cur_dict):
         "bistatic_volume_factor",
         "ionspecies",
         "ionfracs",
-        "mtime_estimate_method"
+        "mtime_estimate_method",
     ]
     inputkeys = list(cur_dict.keys())
     for ikey in inputkeys:
@@ -117,7 +117,7 @@ def check_dicts(coorddict, paramvalues):
         "maximum_bulk_doppler",
         "tx_target_rx_angle",
         "bistatic_volume_factor",
-        "mtime_estimate_method"
+        "mtime_estimate_method",
     ]
 
     allnames = att_names + varnames
@@ -186,7 +186,7 @@ def get_default(coordvals):
         gain_rx_dB=42.0,
         frequency_Hz=440e6,
         excess_rx_noise_K=0.0,
-        mtime_estimate_method='std'
+        mtime_estimate_method="std",
     )
 
     default_params["O+"] = 1.0
