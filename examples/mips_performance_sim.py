@@ -63,7 +63,7 @@ def model_run_1():
         bistatic_volume_factor=1.0,
         quick_bandwidth_estimate=True,
         calculate_plasma_parameter_errors=False,
-        mtime_estimate_method='mracf',
+        mtime_estimate_method="mracf",
         Aeff=Aeff,
     )
     paramvalues["O+"] = 1.0
@@ -158,7 +158,7 @@ def model_run_2():
         peak_power_W=pwr,
         maximum_range_m=800e3,
         n_bauds=1,
-        pulse_length_ns= int(1e9*rng * 2 / sc.c),
+        pulse_length_ns=int(1e9 * rng * 2 / sc.c),
         excess_rx_noise_K=0.0,
         gain_tx_dB=gn,
         gain_rx_dB=gn,
@@ -178,7 +178,7 @@ def model_run_2():
         tx_target_rx_angle=0,
         bistatic_volume_factor=1.0,
         quick_bandwidth_estimate=True,
-        mtime_estimate_method='mracf',
+        mtime_estimate_method="mracf",
         calculate_plasma_parameter_errors=False,
     )
     paramvalues["O+"] = 1.0
@@ -254,7 +254,7 @@ def model_run_3():
         peak_power_W=pwr,
         maximum_range_m=800e3,
         n_bauds=1,
-        pulse_length_ns=int(1e9*rng * 2 / sc.c),
+        pulse_length_ns=int(1e9 * rng * 2 / sc.c),
         excess_rx_noise_K=0.0,
         gain_tx_dB=gn,
         gain_rx_dB=gn,
@@ -274,7 +274,7 @@ def model_run_3():
         tx_target_rx_angle=0,
         bistatic_volume_factor=1.0,
         quick_bandwidth_estimate=True,
-        mtime_estimate_method='mracf',
+        mtime_estimate_method="mracf",
         calculate_plasma_parameter_errors=False,
     )
     paramvalues["O+"] = 1.0
@@ -355,7 +355,7 @@ def model_run_4():
     paramvalues = dict(
         maximum_range_m=800e3,
         n_bauds=1,
-        pulse_length_ns=int(1e9*rng * 2 / sc.c),
+        pulse_length_ns=int(1e9 * rng * 2 / sc.c),
         excess_rx_noise_K=x_tsys_mono,
         gain_tx_dB=gn,
         gain_rx_dB=gn,
@@ -375,7 +375,7 @@ def model_run_4():
         tx_target_rx_angle=0,
         bistatic_volume_factor=1.0,
         quick_bandwidth_estimate=True,
-        mtime_estimate_method='mracf',
+        mtime_estimate_method="mracf",
         calculate_plasma_parameter_errors=False,
     )
     paramvalues["O+"] = 1.0
@@ -475,7 +475,7 @@ def model_run_5():
     paramvalues = dict(
         maximum_range_m=800e3,
         n_bauds=1,
-        pulse_length_ns=int(1e9*rng * 2 / sc.c),
+        pulse_length_ns=int(1e9 * rng * 2 / sc.c),
         duty_cycle=0.1,
         excess_rx_noise_K=x_tsys,
         frequency_Hz=440e6,
@@ -494,7 +494,7 @@ def model_run_5():
         tx_target_rx_angle=0,
         bistatic_volume_factor=1.0,
         quick_bandwidth_estimate=True,
-        mtime_estimate_method='mracf',
+        mtime_estimate_method="mracf",
         calculate_plasma_parameter_errors=False,
     )
     paramvalues["O+"] = 1.0
@@ -597,7 +597,7 @@ def model_run_6():
         tx_target_rx_angle=0.0,
         bistatic_volume_factor=1.0,
         quick_bandwidth_estimate=False,
-        mtime_estimate_method='mracf',
+        mtime_estimate_method="mracf",
         calculate_plasma_parameter_errors=False,
     )
     paramvalues["O+"] = 1.0
@@ -647,7 +647,7 @@ def model_run_6():
         tx_target_rx_angle=0.0,
         bistatic_volume_factor=1.0,
         quick_bandwidth_estimate=False,
-        mtime_estimate_method='mracf',
+        mtime_estimate_method="mracf",
         calculate_plasma_parameter_errors=False,
     )
     paramvalues["O+"] = 1.0
@@ -692,7 +692,7 @@ def model_run_6():
         tx_target_rx_angle=0.0,
         bistatic_volume_factor=1.0,
         quick_bandwidth_estimate=False,
-        mtime_estimate_method='mracf',
+        mtime_estimate_method="mracf",
         calculate_plasma_parameter_errors=False,
     )
     paramvalues["O+"] = 1.0
@@ -887,7 +887,7 @@ def model_run_7():
         tx_target_rx_angle=0.0,
         bistatic_volume_factor=1.0,
         quick_bandwidth_estimate=False,
-        mtime_estimate_method='mracf',
+        mtime_estimate_method="mracf",
         calculate_plasma_parameter_errors=False,
     )
     paramvalues["O+"] = 1.0
@@ -1123,7 +1123,7 @@ def model_run_8():
         tx_target_rx_angle=0.0,
         bistatic_volume_factor=1.0,
         quick_bandwidth_estimate=False,
-        mtime_estimate_method='mracf',
+        mtime_estimate_method="mracf",
         calculate_plasma_parameter_errors=False,
     )
     paramvalues["O+"] = 1.0
@@ -1273,7 +1273,7 @@ def model_run_9():
     ti = m["Ti"][0]
 
     # pulse length sweep
-    tpulse = np.linspace(1000,100000,100).astype(int)
+    tpulse = np.linspace(1000, 100000, 100).astype(int)
 
     # uncertainty
     est_err = 0.05
@@ -1310,7 +1310,7 @@ def model_run_9():
         tx_target_rx_angle=0,
         bistatic_volume_factor=1.0,
         quick_bandwidth_estimate=True,
-        mtime_estimate_method='mracf',
+        mtime_estimate_method="mracf",
         calculate_plasma_parameter_errors=False,
     )
     paramvalues["O+"] = 1.0
@@ -1358,7 +1358,7 @@ def model_run_9():
         tx_target_rx_angle=0,
         bistatic_volume_factor=1.0,
         quick_bandwidth_estimate=True,
-        mtime_estimate_method='mracf',
+        mtime_estimate_method="mracf",
         calculate_plasma_parameter_errors=False,
     )
     paramvalues["O+"] = 1.0
@@ -1369,12 +1369,15 @@ def model_run_9():
 
     ax[0].loglog(
         datasetamisr["measurement_time"].values,
-        1e-9*tpulse * sc.c / 2e3,
+        1e-9 * tpulse * sc.c / 2e3,
         "r-x",
         label="AMISR",
     )
     ax[0].loglog(
-        datasetmho["measurement_time"].values, 1e-9*tpulse * sc.c / 2e3, "g-o", label="MISA"
+        datasetmho["measurement_time"].values,
+        1e-9 * tpulse * sc.c / 2e3,
+        "g-o",
+        label="MISA",
     )
     ax[0].grid(True)
     ax[0].text(
@@ -1397,8 +1400,12 @@ def model_run_9():
     f = pylab.figure()
     ax = [pylab.gca()]
 
-    ax[0].loglog(datasetamisr["snr"].values, 1e-9*tpulse * sc.c / 2e3, "r-x", label="AMISR")
-    ax[0].loglog(datasetmho["snr"].values, 1e-9*tpulse * sc.c / 2e3, "g-o", label="MISA")
+    ax[0].loglog(
+        datasetamisr["snr"].values, 1e-9 * tpulse * sc.c / 2e3, "r-x", label="AMISR"
+    )
+    ax[0].loglog(
+        datasetmho["snr"].values, 1e-9 * tpulse * sc.c / 2e3, "g-o", label="MISA"
+    )
     ax[0].grid(True)
     ax[0].legend(fontsize=9)
     ax[0].set_xlabel("SNR")
