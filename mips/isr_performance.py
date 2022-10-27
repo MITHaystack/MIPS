@@ -926,7 +926,6 @@ def is_snr(
     else:
         baud_gain = n_bauds * (n_bauds - 1) / 2.0
 
-
     # handle mis-matched beams
     # HACK noise_scaling has been set to unity for now baring a longder discussion about how to handle miss matched beams.
     if rad_tx_beamwidth <= rad_rx_beamwidth:
