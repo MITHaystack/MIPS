@@ -664,7 +664,7 @@ def isr_array_sim(
                 # normalized k vector, compute bragg vector
                 # just the vector direction
                 k_tx0 = k_tx / k_txm
-                k_rx0 = -k_rx / k_txm
+                k_rx0 = -k_rx / k_rxm
                 k_bragg = k_rx0 - k_tx0
 
                 # extra debug check with lambda scaled values
