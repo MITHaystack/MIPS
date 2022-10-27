@@ -4,6 +4,21 @@ MIPS Change Log
 
 .. current developments
 
+v2.2.2
+====================
+
+**Added:**
+
+* Function to calculate measurement time from Eiscat paper.
+* Added measurement time method flag to apply mr acf technique or not.
+
+**Changed:**
+
+* All pulse lengths and IPPs are now in nano seconds.
+* Noise scaling term for different beam sizes has been deactivate until further discussion.
+
+
+
 vv2.2.1
 ====================
 
