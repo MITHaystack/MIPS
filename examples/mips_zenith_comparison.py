@@ -9,6 +9,7 @@
 import datetime
 import dateutil.parser
 import numpy as np
+import pylab
 import madrigalWeb.madrigalWeb
 import astropy.io.ascii
 from mips import (
@@ -87,13 +88,13 @@ def model_run_7():
 
     fswp = 440.2e6
     pwr = md["power"][0] * 1e3
-    gn = 49.72
+    gn = 49.9
 
-    tpulse = 480000
+    tpulse = 480E-6
 
     duty = 0.053872
-    eff_tx = 0.51  # empirically determined by SNR model-to-data match
-    eff_rx = 0.51  # empirically determined by SNR model-to-data match
+    eff_tx = 0.475  # empirically determined by SNR model-to-data match
+    eff_rx = 0.475 # empirically determined by SNR model-to-data match
     bw_fac = 1.0
     est_err = 0.01
     vdopp_max = md["vo"]
@@ -121,7 +122,7 @@ def model_run_7():
     paramvalues = dict(
         peak_power_W=pwr,
         n_bauds=1,
-        pulse_length_ns=tpulse,
+        pulse_length_s=tpulse,
         duty_cycle=duty,
         gain_tx_dB=gn,
         gain_rx_dB=gn,
@@ -137,7 +138,7 @@ def model_run_7():
         tx_target_rx_angle=0.0,
         bistatic_volume_factor=1.0,
         quick_bandwidth_estimate=False,
-        mtime_estimate_method="mracf",
+        mtime_estimate_method="standard",
         calculate_plasma_parameter_errors=False,
     )
     paramvalues["O+"] = 1.0
@@ -251,7 +252,7 @@ def model_run_7():
     ax[0].set_xlim(0.9, 1.1)
     ax[0].legend(fontsize=8)
     ax[1].plot(
-        50e3 / dataset["echo_bandwidth"].values, md["gdalt"], label="Model BW / 50 kHz"
+        33e3 / dataset["echo_bandwidth"].values, md["gdalt"], label="Model BW / 33 kHz"
     )
     ax[1].set_xlabel("BW Ratio")
     ax[1].set_title(dt.isoformat())
@@ -259,3 +260,8 @@ def model_run_7():
     ax[1].legend(fontsize=8)
 
     f.savefig("figures/is_sim_mho_zenith_ratio_bw.png")
+
+
+if __name__ == "__main__":
+
+    model_run_7()
