@@ -6,7 +6,7 @@ radars:
   steering_mask:
   - 0.0
   - 360.0
-  - 4.5
+  - 0.0
   - 90.0
   freq: 440000000.0
   tx_gain: 42.5
@@ -33,6 +33,40 @@ radars:
   tsys_type: fixed_high
   xtra_tsys: 50.0
   notes: Zenith
+- name: millstone_lband
+  ant_type: dish
+  az_rotation: 0.0
+  el_tilt: 0.0
+  steering_mask:
+  - 0.0
+  - 360.0
+  - 0.0
+  - 90.0
+  freq: 1295000000.0
+  tx_gain: 47.9
+  rx_gain: 47.9
+  tx_power: 3000000.0
+  duty: 0.20
+  tsys_type: fixed_high
+  xtra_tsys: 50.0
+  notes: L-band
+- name: greenbank_43m
+  ant_type: dish
+  az_rotation: 0.0
+  el_tilt: 0.0
+  steering_mask:
+  - 0.0
+  - 360.0
+  - 0.0
+  - 90.0
+  freq: 440000000.0
+  tx_gain: 42.0
+  rx_gain: 42.0
+  tx_power: 0.0
+  duty: 0.0
+  tsys_type: fixed_low
+  xtra_tsys: 0.0
+  notes: 140 foot GB telescope
 - name: jicamarca
   ant_type: planar_array
   az_rotation: 0.0
@@ -313,6 +347,13 @@ sites:
   elevation_mask: 2.5
   description: Millstone Hill UHF radar site
   notes: existing 46 meter IS radar
+- name: greenbank
+  latitude: 38.43771
+  longitude: -79.83570
+  altitude: 805.0
+  elevation_mask: 2.5
+  description: NRAO Greenbank WV Site
+  notes: existing 140 foot antenna
 - name: jicamarca
   latitude: -11.95
   longitude: -76.87
