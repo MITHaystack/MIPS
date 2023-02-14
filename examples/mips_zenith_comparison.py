@@ -90,11 +90,11 @@ def model_run_7():
     pwr = md["power"][0] * 1e3
     gn = 49.9
 
-    tpulse = 480E-6
+    tpulse = 480e-6
 
     duty = 0.053872
     eff_tx = 0.475  # empirically determined by SNR model-to-data match
-    eff_rx = 0.475 # empirically determined by SNR model-to-data match
+    eff_rx = 0.475  # empirically determined by SNR model-to-data match
     bw_fac = 1.0
     est_err = 0.01
     vdopp_max = md["vo"]

@@ -14,7 +14,8 @@ from mips.isr_mapper import map_radar_array
 from mips.isr_plotting import isr_map_plot
 from copy import copy
 
-#from wff_radars import *
+# from wff_radars import *
+
 
 def main():
 
@@ -28,35 +29,35 @@ def main():
         client = None
 
     # set up directories
-    savedir = Path('misa_gb_bistatic').absolute()
-    savedir.mkdir(exist_ok = True)
-    figdir = savedir.joinpath('figs')
+    savedir = Path("misa_gb_bistatic").absolute()
+    savedir.mkdir(exist_ok=True)
+    figdir = savedir.joinpath("figs")
     figdir.mkdir(exist_ok=True)
-    datadir = savedir.joinpath('data')
+    datadir = savedir.joinpath("data")
     datadir.mkdir(exist_ok=True)
 
     # These are all consistant parameters
-    map_parameters=['speed','dNe','dTi','dTe','dV','gamma']
-    dval_max=[1000.0,0.1,20.0,20.0,30.0,100.]
+    map_parameters = ["speed", "dNe", "dTi", "dTe", "dV", "gamma"]
+    dval_max = [1000.0, 0.1, 20.0, 20.0, 30.0, 100.0]
 
     # radar concepts
-    tx_names = ['Millstone UHF']
-    tx_system_list = ['millstone_misa']
-    rx_names = ['Greenbank 140ft']
-    rx_system_list = ['greenbank_43m']
+    tx_names = ["Millstone UHF"]
+    tx_system_list = ["millstone_misa"]
+    rx_names = ["Greenbank 140ft"]
+    rx_system_list = ["greenbank_43m"]
 
-    tx_site_list = ['millstone']
-    rx_site_list = ['greenbank']
+    tx_site_list = ["millstone"]
+    rx_site_list = ["greenbank"]
 
     plot_extent = {
-        "center_lat" : 37.93433,
-        "center_lon" : -75.47057,
-        "delta_lat" : 30.0,
-        "delta_lon" : 35.0,
+        "center_lat": 37.93433,
+        "center_lon": -75.47057,
+        "delta_lat": 30.0,
+        "delta_lon": 35.0,
     }
 
     ionosphere_eregion = {
-        "name" : "E-region",
+        "name": "E-region",
         "use_iri": False,
         "iri_type": "local",
         "iri_time": "fixed parameters",
@@ -68,7 +69,7 @@ def main():
     # mode_eregion = dict(n_bauds=16, pulse_length_s=480E-6, ipp=8190E-6)
     mode_eregion = dict(n_bauds=16, tx_pulse_length=480000, ipp=8190000)
     ionosphere_fregion = {
-        "name" : "F-region",
+        "name": "F-region",
         "use_iri": False,
         "iri_type": "local",
         "iri_time": "fixed parameters",
@@ -80,7 +81,7 @@ def main():
     # mode_fregion = dict(n_bauds=1, pulse_length_s=480E-6, ipp=8910E-6)
     mode_fregion = dict(n_bauds=1, tx_pulse_length=480000, ipp=8910000)
     ionosphere_topside = {
-        "name" : "topside",
+        "name": "topside",
         "use_iri": False,
         "iri_type": "local",
         "iri_time": "fixed parameters",
@@ -111,18 +112,18 @@ def main():
 
     for iidx, (iono, imode) in enumerate(zip(ionosphere_list, mode_list)):
         isim = copy(sim_default)
-        isim["tname"] = "Millstone-Greenbank UHF bistatic "  + "(" + iono["name"] + ")"
+        isim["tname"] = "Millstone-Greenbank UHF bistatic " + "(" + iono["name"] + ")"
         isim["ionosphere"] = iono
         isim.update(imode)
         print("mapping " + iono["name"])
 
-        sfname = "millstone_greenbank_bistatic"  "_"+ iono["name"]
+        sfname = "millstone_greenbank_bistatic" "_" + iono["name"]
         # Execute mapping, record data, and output plot as png
         ds_WFF = map_radar_array(**isim)
 
         ds_WFF.to_netcdf(
             datadir.joinpath(sfname + ".nc"), engine="h5netcdf", invalid_netcdf=True
-            )
+        )
 
         isr_map_plot(
             ds_WFF,
@@ -140,5 +141,5 @@ def main():
         )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
