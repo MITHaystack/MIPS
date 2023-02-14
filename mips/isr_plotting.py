@@ -3,7 +3,7 @@
 Plotting output data
 """
 from pathlib import Path
-import numpy
+import numpy as np
 import numpy.ma as ma
 import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
@@ -11,8 +11,29 @@ import matplotlib.ticker as mticker
 from cartopy.mpl.ticker import LongitudeFormatter, LatitudeFormatter
 
 
-def plot_grid(lat0, lon0, coef=0.7, resolution="l", map_type="normal"):
-    """Plotting projection helper."""
+def plot_grid(lat0, lon0, coef=0.7, map_type="normal"):
+    """Plotting projection helper.
+
+    Parameters
+    ----------
+    lat0 : float
+        Center latitude for projection.
+    lon : float
+        Center longitude for projection.
+    coef : float
+        Zoom in coeffiecent. Small means more zoom.
+    map_type : string
+        Type of projection. Can be normal, north_polar, south_polar or full_globe.
+
+    Returns
+    -------
+    fig : matplotlib.fig
+        Figure object from matplotlib.
+    ax : matplotlib.ax
+        Axes object from matplotlib.
+    proj : ccrs.proj
+        Projection object form cartopy
+    """
 
     if map_type == "full_globe":
         print("full globe projection")
@@ -57,8 +78,8 @@ def plot_grid(lat0, lon0, coef=0.7, resolution="l", map_type="normal"):
     ax.set_extent(new_ext, crs=proj)
     ax.coastlines()
     gl = ax.gridlines(draw_labels=True, linestyle="--")
-    gl.xlocator = mticker.FixedLocator(numpy.arange(-180, 180, lon_spacing))
-    gl.ylocator = mticker.FixedLocator(numpy.arange(-90.0, 90, lat_spacing))
+    gl.xlocator = mticker.FixedLocator(np.arange(-180, 180, lon_spacing))
+    gl.ylocator = mticker.FixedLocator(np.arange(-90.0, 90, lat_spacing))
     gl.xformatter = LongitudeFormatter()
     gl.yformatter = LatitudeFormatter()
 
@@ -88,7 +109,26 @@ def isr_map_plot(
         Result of the ISR mapping simulation.
     map_parameters : list
         List of desired map parameters to plot.
-    dval_max :
+    dval_max : list
+        List of max values to for the colorbar.
+    map_zoom : float
+        How much to zoom in, lower number more zoom.
+    range_contours : bool
+        Make a range contour plot.
+    map_fname : string
+        Name template.
+    map_type : string
+        Type of projection. Can be normal, north_polar, south_polar or full_globe.
+    annotate : Bool
+        Add annotation to maps.
+    legend : bool
+        Add a legend.
+    vmin : float
+        Minimum for plot values.
+    vmax : float
+        Maximum for plot values.
+    extent : dict
+        Dictionary to show the extent of the plots.
 
     """
     map_fname = Path(map_fname)
@@ -134,6 +174,11 @@ def isr_map_plot(
                 dval_mat = map_info["dV_tot"].values
                 ptype = "Velocity error $\mathrm{stddev}(V) (m/s)$"
                 extstr = "_dV"
+
+            elif mp == "gamma":
+                dval_mat = 90.0 - np.abs(90 - map_info["tx_target_rx_angle"].values[0])
+                ptype = "Bistatic Angle in Degrees"
+                extstr = "_gamma"
             map_final_fname = map_fname.parent.joinpath(
                 map_fname.stem + extstr + map_fname.suffix
             )
@@ -152,11 +197,8 @@ def isr_map_plot(
                 center_lat, center_lon, coef=map_zoom, map_type=map_type
             )
 
-        longs_g, lats_g = numpy.meshgrid(
-            map_info["long"].values, map_info["lat"].values
-        )
+        longs_g, lats_g = np.meshgrid(map_info["long"].values, map_info["lat"].values)
         dval = ma.masked_invalid(dval_mat)
-
         cm = plt.get_cmap("viridis").copy()
         cm.set_bad("gray", alpha=0.0)
 
@@ -167,9 +209,9 @@ def isr_map_plot(
                 cs = ax.pcolormesh(
                     longs_g,
                     lats_g,
-                    numpy.log10(dval),
-                    vmax=numpy.log10(dval_lim),
-                    vmin=numpy.log10(vmin),
+                    np.log10(dval),
+                    vmax=np.log10(dval_lim),
+                    vmin=np.log10(vmin),
                     cmap=cm,
                     transform=dataproj,
                 )
@@ -177,9 +219,9 @@ def isr_map_plot(
                 cs = ax.pcolormesh(
                     longs_g,
                     lats_g,
-                    numpy.log10(dval),
-                    vmin=numpy.log10(vmin),
-                    vmax=numpy.log10(vmax),
+                    np.log10(dval),
+                    vmin=np.log10(vmin),
+                    vmax=np.log10(vmax),
                     cmap=cm,
                     transform=dataproj,
                 )
@@ -222,6 +264,8 @@ def isr_map_plot(
             cb.set_label("(K)")
         elif mp == "dV":
             cb.set_label("(m/s)")
+        elif mp == "gamma":
+            cb.set_label("deg")
         else:
             print("Unknown map type %s default label" % (mp))
             cb.set_label("unknown")

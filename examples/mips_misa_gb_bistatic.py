@@ -36,8 +36,8 @@ def main():
     datadir.mkdir(exist_ok=True)
 
     # These are all consistant parameters
-    map_parameters=['speed','dNe','dTi','dTe','dV']
-    dval_max=[1000.0,0.1,20.0,20.0,30.0]
+    map_parameters=['speed','dNe','dTi','dTe','dV','gamma']
+    dval_max=[1000.0,0.1,20.0,20.0,30.0,100.]
 
     # radar concepts
     tx_names = ['Millstone UHF']
@@ -65,8 +65,8 @@ def main():
         "T_e": 300.0,
         "T_i": 300.0,
     }
-    mode_eregion = dict(n_bauds=16, pulse_length_s=480E-6, ipp=8190E-6)
-
+    # mode_eregion = dict(n_bauds=16, pulse_length_s=480E-6, ipp=8190E-6)
+    mode_eregion = dict(n_bauds=16, tx_pulse_length=480000, ipp=8190000)
     ionosphere_fregion = {
         "name" : "F-region",
         "use_iri": False,
@@ -77,8 +77,8 @@ def main():
         "T_e": 2000.0,
         "T_i": 1200.0,
     }
-    mode_fregion = dict(n_bauds=1, pulse_length_s=480E-6, ipp=8910E-6)
-
+    # mode_fregion = dict(n_bauds=1, pulse_length_s=480E-6, ipp=8910E-6)
+    mode_fregion = dict(n_bauds=1, tx_pulse_length=480000, ipp=8910000)
     ionosphere_topside = {
         "name" : "topside",
         "use_iri": False,
@@ -89,7 +89,8 @@ def main():
         "T_e": 2700.0,
         "T_i": 2000.0,
     }
-    mode_topside = dict(n_bauds=1, pulse_length_s=2000E-3, ipp=34600E-6)
+    # mode_topside = dict(n_bauds=1, pulse_length_s=2000E-3, ipp=34600E-6)
+    mode_topside = dict(n_bauds=1, tx_pulse_length=2000000, ipp=34600000)
 
     sim_default = dict(
         tx_sites=tx_site_list,
@@ -98,7 +99,7 @@ def main():
         rx_radars=rx_system_list,
         pair_list="cross",
         plasma_parameter_errors=True,
-        ngrid=100,
+        ngrid=[100, 150],
         extent=plot_extent,
         mtime_estimate_method="std",
         mpclient=client,

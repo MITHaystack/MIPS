@@ -11,7 +11,7 @@
 import scipy.constants as sc
 import scipy.interpolate
 import math
-import numpy
+import numpy as np
 import urllib.request, urllib.parse, urllib.error
 import urllib.request, urllib.error, urllib.parse
 import datetime
@@ -74,7 +74,7 @@ def rx_temperature_model(frequency, mtype="fixed_medium"):
 
         # variable model
         # base model for the amplifier from data sheet
-        lna_freq = numpy.array(
+        lna_freq = np.array(
             [
                 20.0e6,
                 60.0e6,
@@ -98,7 +98,7 @@ def rx_temperature_model(frequency, mtype="fixed_medium"):
                 3000e6,
             ]
         )
-        lna_nf = numpy.array(
+        lna_nf = np.array(
             [
                 2.68,
                 1.18,
@@ -180,7 +180,7 @@ def simple_array(N, pwr):
     gain : float
         total gain in boresight direction, dB
     """
-    return (N * pwr, 10.0 * numpy.log10(N) + 6.0)
+    return (N * pwr, 10.0 * np.log10(N) + 6.0)
 
 
 def iri2016py(dt, gdlat, gdlon, gdalt_start, gdalt_end, gdalt_step):
@@ -418,9 +418,9 @@ def iri2016(dt, gdlat, gdlon, gdalt_start, gdalt_end, gdalt_step):
     ds = ds[indx:]
     dlines = ds.split("\n")[3:]
     a = astropy.io.ascii.read(dlines, names=parnames)
-    a["gdalt"] = numpy.arange(gdalt_start, gdalt_end + gdalt_step, gdalt_step)
-    a["gdlat"] = gdlat * numpy.ones(len(a), numpy.float)
-    a["gdlon"] = gdlon * numpy.ones(len(a), numpy.float)
+    a["gdalt"] = np.arange(gdalt_start, gdalt_end + gdalt_step, gdalt_step)
+    a["gdlat"] = gdlat * np.ones(len(a), np.float)
+    a["gdlon"] = gdlon * np.ones(len(a), np.float)
     return a
 
 
@@ -489,14 +489,18 @@ def is_bandwidth_estimate(
 
     Returns
     -------
-    is_width_onesided_Hz : float
-        incoherent scatter one-sided spectral bandwidth, Hz
-    total_bandwidth_Hz : float
+    line_shift : float
+
+    line_shift : float
+        normal radar doppler shift for the ion acoustic speed and effective scattering wavelength, Hz
+    bandwidth : float
         total spectral bandwidth including bulk Doppler  shift, Hz
+    h_lambda_inv : float
+        Inverse of wavelength scaled by the bistatic angle in 1/m. Reciprical used to avoid divide by zero errors from bistatic angle.
     """
 
     # sanity checks
-    assert (numpy.array(ionfracs) >= 0.0).all(), "Can't have negative ion fractions."
+    assert (np.array(ionfracs) >= 0.0).all(), "Can't have negative ion fractions."
     assert ISRSpectrum.ioncheck(ionspecies), "Invalid ionspecies"
     assert sum(ionfracs) < 1.1 and sum(ionfracs) > 0.9, "Ion fractions must equal 1."
 
@@ -512,28 +516,30 @@ def is_bandwidth_estimate(
     wavelength = sc.c / frequency_Hz
 
     # ion-acoustic velocity
-    i_ion = numpy.argmax(ionfracs)
+    i_ion = np.argmax(ionfracs)
     ion_mass = ISRSpectrum.getionmass(ionspecies[i_ion])
     v_ion_acoustic = (((sc.k * Ti) / (ion_mass * sc.m_p)) * (1.0 + Te / Ti)) ** 0.5
 
     # Doppler shift due to i-a velocity
     # take into account bistatic Bragg length
-    h_lambda = wavelength / (
-        2.0 * numpy.cos((numpy.pi * tx_target_rx_angle / 180.0) / 2.0)
-    )
+    # h_lambda = wavelength / (
+    #     2.0 * np.cos((np.pi * tx_target_rx_angle / 180.0) / 2.0)
+    # )
 
+    #
+    h_lambda_inv = 2.0 * np.cos((np.pi * tx_target_rx_angle / 180.0) / 2.0) / wavelength
     # normal radar doppler shift for the ion acoustic speed and effective scattering wavelength
-    line_shift = numpy.array(2.0 * v_ion_acoustic / h_lambda)
+    line_shift = np.array(2.0 * v_ion_acoustic * h_lambda_inv)
 
     # flow shift - for bulk line of sight Doppler shifts
-    flow_shift = maximum_bulk_doppler / h_lambda
+    flow_shift = maximum_bulk_doppler * h_lambda_inv
 
     if not quick_estimate_mode:
         # more realistic estimate using two-ion incoherent scatter spectral calculation.
         try:
 
             # spectrum becomes more narrow due to bistatic k-vector
-            bistatic_effective_freq = frequency_Hz * ((wavelength * 0.5) / h_lambda)
+            bistatic_effective_freq = frequency_Hz * ((wavelength * 0.5) * h_lambda_inv)
             iss = ISRSpectrum.Specinit(
                 centerFrequency=bistatic_effective_freq,
                 nspec=1024,
@@ -547,11 +553,11 @@ def is_bandwidth_estimate(
             spec = spec / spec.max()
 
             # fix problems with non-zero spectra
-            indx = numpy.where(spec < 0)[0]
+            indx = np.where(spec < 0)[0]
             spec[indx] = 0.0
             # working backwards from high frequency end of the spectrum,
             # find the place where the spectrum is 5% of the peak value
-            indx = numpy.nonzero(spec == spec.max())[0][-1]
+            indx = np.nonzero(spec == spec.max())[0][-1]
             spec_intp = scipy.interpolate.interp1d(
                 spec[indx:][::-1], omega[indx:][::-1]
             )
@@ -572,7 +578,7 @@ def is_bandwidth_estimate(
     # including user multiplication factor bwf
     bandwidth = 2.0 * radar_doppler_shift * bandwidth_factor
 
-    return (line_shift, bandwidth, h_lambda)
+    return (line_shift, bandwidth, h_lambda_inv)
 
 
 def is_calculate_spectrum(velocity_ms, frequency_Hz, Ti, Te, Ne, ionspecies, ionfracs):
@@ -675,21 +681,21 @@ def is_calculate_plasma_parameter_errors(
     vel0 = velocity_ms
 
     # step of numerical estimation of Jacobian
-    df = numpy.array([0.01 * Ne0, 0.01 * Ti0, 0.01 * Te0, 10.0])
+    df = np.array([0.01 * Ne0, 0.01 * Ti0, 0.01 * Te0, 10.0])
 
     (freqs, spec0) = is_calculate_spectrum(
         vel0, frequency_Hz, Ti0, Te0, Ne0, ionspecies, ionfracs
     )
 
-    spec_scale = numpy.max(spec0)
+    spec_scale = np.max(spec0)
     n_spec = len(spec0)
 
     # Jacobian for four parameter fit (ne, ti, te, vel)
-    J = numpy.zeros([n_spec, 4])
+    J = np.zeros([n_spec, 4])
 
-    pars0 = numpy.array([Ne0, Ti0, Te0, vel0])
+    pars0 = np.array([Ne0, Ti0, Te0, vel0])
     for i in range(4):
-        pars1 = numpy.copy(pars0)
+        pars1 = np.copy(pars0)
         pars1[i] = pars1[i] + df[i]
         Ne = pars1[0]
         Ti = pars1[1]
@@ -701,45 +707,43 @@ def is_calculate_plasma_parameter_errors(
         spec1 = spec1 * (Ne / Ne0)
         J[:, i] = (spec1 / spec_scale - spec0 / spec_scale) / df[i]
 
-    sigma = numpy.zeros(n_spec)
+    sigma = np.zeros(n_spec)
     sigma[:] = estimation_error_stdev**2.0
-    Sigma_inv = numpy.diag(1.0 / sigma)
+    Sigma_inv = np.diag(1.0 / sigma)
     try:
-        Sigma_post = numpy.linalg.inv(
-            numpy.dot(numpy.dot(numpy.transpose(J), Sigma_inv), J)
-        )
+        Sigma_post = np.linalg.inv(np.dot(np.dot(np.transpose(J), Sigma_inv), J))
     except:
-        Sigma_post = numpy.nan * numpy.ones((4, 4))
+        Sigma_post = np.nan * np.ones((4, 4))
 
     if debug_print:
 
-        corr_mat = numpy.copy(Sigma_post)
+        corr_mat = np.copy(Sigma_post)
         for i in range(4):
             for j in range(4):
                 corr_mat[i, j] = Sigma_post[i, j] / (
-                    numpy.sqrt(Sigma_post[i, i]) * numpy.sqrt(Sigma_post[j, j])
+                    np.sqrt(Sigma_post[i, i]) * np.sqrt(Sigma_post[j, j])
                 )
         print("Correlation matrix")
         print(corr_mat)
         print("Diagonal 2-sigma errors")
-        print((2.0 * numpy.sqrt(numpy.diag(Sigma_post))))
+        print((2.0 * np.sqrt(np.diag(Sigma_post))))
         print(
             (
                 "dNe/Ne %1.2f %% dTi %1.2f K dTe %1.2f K dv %1.2f m/s"
                 % (
-                    numpy.sqrt(Sigma_post[0, 0]) / Ne0,
-                    numpy.sqrt(Sigma_post[1, 1]),
-                    numpy.sqrt(Sigma_post[2, 2]),
-                    numpy.sqrt(Sigma_post[3, 3]),
+                    np.sqrt(Sigma_post[0, 0]) / Ne0,
+                    np.sqrt(Sigma_post[1, 1]),
+                    np.sqrt(Sigma_post[2, 2]),
+                    np.sqrt(Sigma_post[3, 3]),
                 )
             )
         )
 
     return {
-        "dNe": numpy.sqrt(Sigma_post[0, 0]) / Ne0,
-        "dTi": numpy.sqrt(Sigma_post[1, 1]),
-        "dTe": numpy.sqrt(Sigma_post[2, 2]),
-        "dV": numpy.sqrt(Sigma_post[3, 3]),
+        "dNe": np.sqrt(Sigma_post[0, 0]) / Ne0,
+        "dTi": np.sqrt(Sigma_post[1, 1]),
+        "dTe": np.sqrt(Sigma_post[2, 2]),
+        "dV": np.sqrt(Sigma_post[3, 3]),
     }
 
 
@@ -1001,8 +1005,8 @@ def is_snr(
         + ((1.0 + alpha**2.0) * (1.0 + alpha**2.0 + Te / Ti)) ** -1.0
     )
 
-    if numpy.min(wavelength_to_debye_length_ratio) < 1.0:
-        wdval = numpy.min(wavelength_to_debye_length_ratio)
+    if np.min(wavelength_to_debye_length_ratio) < 1.0:
+        wdval = np.min(wavelength_to_debye_length_ratio)
 
         pfunc(
             "Warning: Wavelength to Debye length ratio %f is less than 1. Ion line expression not valid. Applicability of the ISR method to this plasma dubious."
@@ -1044,8 +1048,9 @@ def is_snr(
 
     # Final SNR computation. Bistatic radar equation, taking into account polarization effects
 
-    # bistatic depolarization, assuming circular transmit polarization
-    polarization_loss = 1.0 - numpy.sin(sc.pi * tx_target_rx_angle / 360.0) ** 2.0
+    # HACK bistatic depolarization needs to be treated to deal with different types of polariation. Probably the best way is to do a scattering matrix.
+    # bistatic depolarization, assuming vertical transmit polarization
+    polarization_loss = 1.0 - np.sin(sc.pi * tx_target_rx_angle / 180.0) ** 2.0
 
     # radar cross section
     rcs = polarization_loss * unit_xsection * Ne * volume
@@ -1103,12 +1108,12 @@ def is_snr(
         # time of flight to maximum range must be considered as a limiting factor to how often we can
         # transmit pulses.
         minimum_observation_interval = 2.0 * maximum_range_m / sc.c
-        sample_rate = 1.0 / numpy.maximum(
+        sample_rate = 1.0 / np.maximum(
             minimum_observation_interval,
-            numpy.maximum(decorrelation_time / duty_cycle, p_length / duty_cycle),
+            np.maximum(decorrelation_time / duty_cycle, p_length / duty_cycle),
         )
     else:
-        sample_rate = 1.0 / numpy.maximum(
+        sample_rate = 1.0 / np.maximum(
             decorrelation_time / duty_cycle, p_length / duty_cycle
         )
 
@@ -1132,8 +1137,8 @@ def is_snr(
     # M. P. Sulzer, “A phase modulation technique for a sevenfold statistical improvement in incoherent scatter data‐taking,” Radio Science, vol. 21, no. 4, pp. 737–744, Jul. 1986, doi: 10.1029/RS021i004p00737.
 
     if mtime_estimate_method == "mracf":
-        for s_factor in numpy.arange(2.0, 10.0):
-            mtime = numpy.minimum(
+        for s_factor in np.arange(2.0, 10.0):
+            mtime = np.minimum(
                 mtime,
                 (s / s_factor + n) ** 2.0
                 / (

@@ -502,9 +502,18 @@ def isr_array_sim(
 
     # bandwidth factor
     bw_fac = 1.0  # we should pass this through from the user level
-
+    if hasattr(n_grid_cells, "__len__"):
+        if len(n_grid_cells) > 1:
+            n_grid_lat = n_grid_cells[0]
+            n_grid_long = n_grid_cells[1]
+        else:
+            n_grid_lat = n_grid_cells[0]
+            n_grid_long = n_grid_cells[0]
+    else:
+        n_grid_lat = n_grid_cells
+        n_grid_long = n_grid_cells
     # Set up the dimensions for the simulation
-    data_dims = dict(pairs=n_paths, lat=n_grid_cells, long=n_grid_cells)
+    data_dims = dict(pairs=n_paths, lat=n_grid_lat, long=n_grid_long)
     # Terms that will be constant through out simulation
     const_dict = dict(
         pulse_length_ns=tx_pulse_length,
@@ -590,8 +599,8 @@ def isr_array_sim(
         const_dict["Ti"] = ionosphere["T_i"]
 
     # target ionosphere grid to evaluate
-    lats = np.linspace(eval_grid[0], eval_grid[1], num=n_grid_cells)
-    longs = np.linspace(eval_grid[2], eval_grid[3], num=n_grid_cells)
+    lats = np.linspace(eval_grid[0], eval_grid[1], num=n_grid_lat)
+    longs = np.linspace(eval_grid[2], eval_grid[3], num=n_grid_long)
 
     pairs = np.arange(n_paths)
     if pair_list:
@@ -641,12 +650,36 @@ def isr_array_sim(
 
                 tgt_alt = ionosphere["alt_m"]
 
+                # tx_loc = np.array(tx_lat[tx_i], tx_lon[tx_i], tx_alt[tx_i])
+                # rx_loc = np.array(rx_lat[rx_i], rx_lon[rx_i], rx_alt[rx_i])
+                ismono = mono_bool[path_idx]
+
+                # # HACK Why do the altitudes of the radars stay at zero?
+                # (az_tx, el_tx, r_tx) = geodetic_to_az_el_r(
+                #     tx_lat[tx_i], tx_lon[tx_i], 0.0, lat, lon, tgt_alt
+                # )
+                # (az_rx, el_rx, r_rx) = geodetic_to_az_el_r(
+                #     rx_lat[rx_i], rx_lon[rx_i], 0.0, lat, lon, tgt_alt
+                # )
+
                 (az_tx, el_tx, r_tx) = geodetic_to_az_el_r(
-                    tx_lat[tx_i], tx_lon[tx_i], 0.0, lat, lon, tgt_alt
+                    tx_lat[tx_i], tx_lon[tx_i], tx_alt[tx_i], lat, lon, tgt_alt
                 )
                 (az_rx, el_rx, r_rx) = geodetic_to_az_el_r(
-                    rx_lat[rx_i], rx_lon[rx_i], 0.0, lat, lon, tgt_alt
+                    rx_lat[rx_i], rx_lon[rx_i], rx_alt[tx_i], lat, lon, tgt_alt
                 )
+
+                if ismono:
+                    (az_tr, el_tr, r_tr) = (0.0, 0.0, 0.0)
+                else:
+                    (az_tr, el_tr, r_tr) = geodetic_to_az_el_r(
+                        tx_lat[rx_i],
+                        tx_lon[rx_i],
+                        tx_alt[tx_i],
+                        rx_lat[rx_i],
+                        rx_lon[rx_i],
+                        rx_alt[tx_i],
+                    )
 
                 tx_ecef = geodetic2ecef(tx_lat[tx_i], tx_lon[tx_i], tx_alt[tx_i])
                 rx_ecef = geodetic2ecef(rx_lat[rx_i], rx_lon[rx_i], rx_alt[rx_i])
@@ -658,6 +691,34 @@ def isr_array_sim(
                 k_txm = np.sqrt(np.dot(k_tx, k_tx))
                 k_rxm = np.sqrt(np.dot(k_rx, k_rx))
 
+                # See appendix in [1] R. de Elía and I. Zawadzki, “Sidelobe Contamination in Bistatic Radars,” Journal of Atmospheric and Oceanic Technology, vol. 17, no. 10, pp. 1313–1329, Oct. 2000, doi: 10.1175/1520-0426(2000)017<1313:SCIBR>2.0.CO;2.
+                delt = np.abs(az_tr - az_tx)
+                costheta = np.cos(np.deg2rad(el_tx))
+                sintheta = np.sin(np.deg2rad(el_tx))
+                # This is probably not necesary
+                r2 = np.sqrt(
+                    r_tx**2
+                    + r_tr**2
+                    - 2
+                    * r_tx
+                    * r_tr
+                    * np.cos(np.deg2rad(az_tr - az_tx))
+                    * np.cos(np.deg2rad(el_tx))
+                )
+                # This angle should always be between 0-180 degrees so sine should never be zero
+                cosalph = (r_tx**2 + r_rx**2 - r_tr**2) / (2 * r_tx * r_rx)
+                sinalph = np.sqrt(1 - cosalph**2)
+                # HACK might want to look at the trig on this
+                sinthetab = (r_tx / r_rx) * np.sin(np.deg2rad(el_tx))
+                costhetab = np.sqrt(1 - sinthetab**2)
+                # HACK check the trig
+                sinbeta = (
+                    np.sin(np.deg2rad(delt)) * r_tx * costheta / (r_rx * costhetab)
+                )
+                cosalprim = (
+                    r_tx**2 * costheta**2 + r_rx**2 * costhetab**2 - r_tr**2
+                ) / (2 * r_tx * costheta * r_rx * costhetab)
+                cosgamma = costheta * costhetab + sintheta * sinthetab * cosalprim
                 # get the cos of the scattering angle
                 inv_angle = np.dot(k_tx, k_rx) / (k_txm * k_rxm)
 
@@ -687,8 +748,10 @@ def isr_array_sim(
 
                 # See appendix in [1] R. de Elía and I. Zawadzki, “Sidelobe Contamination in Bistatic Radars,” Journal of Atmospheric and Oceanic Technology, vol. 17, no. 10, pp. 1313–1329, Oct. 2000, doi: 10.1175/1520-0426(2000)017<1313:SCIBR>2.0.CO;2.
 
-                bistatic_volume[path_idx, i, j] = np.cos(np.deg2rad(gamma / 2)) ** (-2)
-
+                # bistatic_volume[path_idx, i, j] = np.cos(np.deg2rad(gamma / 2)) ** (-2)
+                bistatic_volume[path_idx, i, j] = 2.0 / (
+                    1 + cosalph
+                )  # cosgamma**2/((1+cosalph)/2)
                 tx_range_mat[path_idx, i, j] = r_tx
                 rx_range_mat[path_idx, i, j] = r_rx
 
@@ -753,7 +816,7 @@ def isr_array_sim(
                 tx_gain_factors[path_idx, i, j] = tx_gain_factor
                 rx_gain_factors[path_idx, i, j] = rx_gain_factor
 
-                gammas[path_idx, i, j] = gamma
+                gammas[path_idx, i, j] = 180.0 * np.arccos(cosalph) / np.pi  # gamma
 
                 # dB with -60 dB regularization
                 tx_gain_tmp = 10.0 * np.log10(
