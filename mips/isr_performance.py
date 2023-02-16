@@ -925,13 +925,13 @@ def is_snr(
 
     # baud_gain for measurement time
     # J. Stamm, J. Vierinen, J. M. Urco, B. Gustavsson, and J. L. Chau, “Radar imaging with EISCAT 3D,” Annales Geophysicae, vol. 39, no. 1, pp. 119–134, Feb. 2021, doi: 10.5194/angeo-39-119-2021.
+    # Note this is likely only true for voltage domain codes. Power domain codes take multiple cycles per measurement.
     if n_bauds < 2:
         baud_gain = 1
     else:
         baud_gain = n_bauds * (n_bauds - 1) / 2.0
 
     # handle mis-matched beams
-    # HACK noise_scaling has been set to unity for now baring a longder discussion about how to handle miss matched beams.
     if rad_tx_beamwidth <= rad_rx_beamwidth:
 
         # Illuminated volume (approximation from Peebles, 5.7-19)
@@ -947,7 +947,6 @@ def is_snr(
 
         # wider RX beam will increase noise collected relative to signal, lowering SNR
         noise_scaling = rad_rx_beamwidth / rad_tx_beamwidth
-        noise_scaling = 1.0
 
     else:
         # Illuminated volume (approximation from Peebles, 5.7-19)
