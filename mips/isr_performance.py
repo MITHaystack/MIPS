@@ -926,10 +926,14 @@ def is_snr(
     # baud_gain for measurement time
     # J. Stamm, J. Vierinen, J. M. Urco, B. Gustavsson, and J. L. Chau, “Radar imaging with EISCAT 3D,” Annales Geophysicae, vol. 39, no. 1, pp. 119–134, Feb. 2021, doi: 10.5194/angeo-39-119-2021.
     # Note this is likely only true for voltage domain codes. Power domain codes take multiple cycles per measurement.
+    # set to unit for the moment until we work out how to handle this. Things like
+    # alternating codes go as 1/sqrt(n_bauds) due to incoherent averaging
+    #
     if n_bauds < 2:
         baud_gain = 1
     else:
-        baud_gain = n_bauds * (n_bauds - 1) / 2.0
+        #baud_gain = n_bauds * (n_bauds - 1) / 2.0
+        baud_gain = 1
 
     # handle mis-matched beams
     if rad_tx_beamwidth <= rad_rx_beamwidth:
