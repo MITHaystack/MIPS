@@ -38,7 +38,7 @@ def main():
 
     # These are all consistant parameters
     map_parameters = ["speed", "dNe", "dTi", "dTe", "dV", "gamma"]
-    dval_max = [1000.0, 0.1, 20.0, 20.0, 30.0, 100.0]
+    dval_max = [3600.0, 0.1, 20.0, 20.0, 30.0, 100.0]
 
     # radar concepts
     tx_names = ["Millstone UHF"]
