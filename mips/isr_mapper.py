@@ -825,6 +825,7 @@ def isr_array_sim(
                 rx_gain_tmp = 10.0 * np.log10(
                     rx_gain_factor * 10.0 ** (rx_gain[rx_i] / 10.0) + 1e-6
                 )
+
                 tx_gain_mat[path_idx, i, j] = tx_gain_tmp
                 rx_gain_mat[path_idx, i, j] = rx_gain_tmp
                 # compute with IRI if indicated
@@ -1165,7 +1166,7 @@ def map_radar_array(
         steering_mask,
         tx_freq,
         tx_gain,
-        rx_gain,
+        txsite_rx_gain,
         tx_power,
         tx_duty_cycle,
         rx_tsys_type,
@@ -1194,7 +1195,7 @@ def map_radar_array(
         rx_boresite,
         steering_mask,
         rx_freq,
-        rx_gain,
+        rx_site_tx_gain,
         rx_gain,
         rx_power,
         rx_duty_cycle,
