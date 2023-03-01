@@ -542,8 +542,8 @@ def is_bandwidth_estimate(
             bistatic_effective_freq = frequency_Hz * ((wavelength * 0.5) * h_lambda_inv)
             iss = ISRSpectrum.Specinit(
                 centerFrequency=bistatic_effective_freq,
-                nspec=1024,
-                sampfreq=16 * line_shift,
+                nspec=4096,
+                sampfreq=128 * line_shift,
                 dFlag=False,
             )
             omega, spec = iss.getspecsimple(
@@ -923,11 +923,13 @@ def is_snr(
     # range resolution is determined by baud length
     range_resolution_m = sc.c / 2.0 * baud_length_s
 
+
     # baud_gain for measurement time
     # J. Stamm, J. Vierinen, J. M. Urco, B. Gustavsson, and J. L. Chau, “Radar imaging with EISCAT 3D,” Annales Geophysicae, vol. 39, no. 1, pp. 119–134, Feb. 2021, doi: 10.5194/angeo-39-119-2021.
     # Note this is likely only true for voltage domain codes. Power domain codes take multiple cycles per measurement.
-    # set to unit for the moment until we work out how to handle this. Things like
-    # alternating codes go as 1/sqrt(n_bauds) due to incoherent averaging
+    # set to unity for the moment until we work out how to handle this. Things like
+    # alternating codes go as 1/sqrt(n_bauds) due to incoherent averaging. So this
+    # produces very optimistic measurement speed without it being correct.
     #
     if n_bauds < 2:
         baud_gain = 1
@@ -946,7 +948,7 @@ def is_snr(
             * tx_to_target_range_m**2
             * rad_tx_beamwidth**2
             * range_resolution_m
-            / (16.0 * math.log(2.0))
+            / (16.0 * math.log(2.0)*(np.cos(np.deg2rad(tx_target_rx_angle)))**2.0)
         )
 
         # wider RX beam will increase noise collected relative to signal, lowering SNR
@@ -961,11 +963,13 @@ def is_snr(
             * tx_to_target_range_m**2
             * rad_rx_beamwidth**2
             * range_resolution_m
-            / (16.0 * math.log(2.0))
+            / (16.0 * math.log(2.0)*(np.cos(np.deg2rad(tx_target_rx_angle)))**2.0)
         )
 
         # wider TX beam than RX is just diluted by the volume above but collects no extra noise
         noise_scaling = 1.0
+
+
 
     # fundamental electron radius and scattering cross-section
     electron_radius = sc.e**2.0 * sc.mu_0 / (4.0 * sc.pi * sc.m_e)
@@ -1007,6 +1011,8 @@ def is_snr(
         - (1.0 + alpha**2.0) ** (-1.0)
         + ((1.0 + alpha**2.0) * (1.0 + alpha**2.0 + Te / Ti)) ** -1.0
     )
+
+
 
     if np.min(wavelength_to_debye_length_ratio) < 1.0:
         wdval = np.min(wavelength_to_debye_length_ratio)
@@ -1053,7 +1059,10 @@ def is_snr(
 
     # HACK bistatic depolarization needs to be treated to deal with different types of polariation. Probably the best way is to do a scattering matrix.
     # bistatic depolarization, assuming vertical transmit polarization
-    polarization_loss = 1.0 - np.sin(sc.pi * tx_target_rx_angle / 180.0) ** 2.0
+    #polarization_loss = 1.0 - np.sin(sc.pi * tx_target_rx_angle / 180.0) ** 2.0
+    #polarization_loss = 1.0
+    # circular polarization case
+    polarization_loss = 1.0 -  0.5*(np.sin(np.deg2rad(tx_target_rx_angle)))**2.0
 
     # radar cross section
     rcs = polarization_loss * unit_xsection * Ne * volume
@@ -1076,6 +1085,7 @@ def is_snr(
     )
     n = sc.k * system_temperature * bandwidth
     snr = s / n
+
 
     # compute the number of independent samples for the integration time
     # we are going to neglect increases in estimation speed from
@@ -1152,6 +1162,28 @@ def is_snr(
                     * (s / s_factor) ** 2.0
                 ),
             )
+
+    # debug printout for sanity checks
+    #if tx_to_target_range_m > 500.0E3 and tx_to_target_range_m < 650.0E3 and tx_target_rx_angle > 44.0 and tx_target_rx_angle < 46.0:
+    #    print("\nrange_resolution_m ", range_resolution_m)
+    #    print("tx range ", tx_to_target_range_m)
+    #    print("tx to rx angle ", tx_target_rx_angle)
+    #    print("tx beamwidth deg", np.rad2deg(rad_tx_beamwidth))
+    #    print("rx beamwidth deg", np.rad2deg(rad_rx_beamwidth))
+    #    print("volume ", volume)
+    #    bv = sc.c / 2.0 * baud_length_s * tx_to_target_range_m**2 * np.sin(np.deg2rad(tx_target_rx_angle)) * rad_tx_beamwidth**2
+    #    print("bowles volume ", bv)
+    #    print("bv / vol ", bv/volume)
+    #    print("noise scale ", noise_scaling)
+    #    print("wavelength ", wavelength)
+    #    print("debye length ", debye_length_m)
+    #    print("gain_tx ", gain_tx)
+    #    print("peak power ", peak_power_W)
+    #    print("sys temp ", system_temperature)
+    #    print("unit_xsection", unit_xsection)
+    #    print("rcs ", rcs, " ", 10.0*np.log10(rcs), " dB")
+    #    print("snr ", snr)
+    #    print("mtime ", mtime)
 
     if calculate_plasma_parameter_errors:
         (plasma_parameter_errors) = is_calculate_plasma_parameter_errors(
