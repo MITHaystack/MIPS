@@ -38,7 +38,7 @@ def main():
 
     # These are all consistant parameters
     map_parameters = ["speed", "dNe", "dTi", "dTe", "dV", "gamma"]
-    dval_max = [3600.0, 0.1, 20.0, 20.0, 30.0, 100.0]
+    dval_max = [2000.0, 0.1, 20.0, 20.0, 30.0, 100.0]
 
     # radar concepts
     tx_names = ["Millstone UHF"]
@@ -62,9 +62,9 @@ def main():
         "iri_type": "local",
         "iri_time": "fixed parameters",
         "alt_m": 100e3,
-        "N_e": 1e11,
-        "T_e": 300.0,
-        "T_i": 300.0,
+        "N_e": 1e10,
+        "T_e": 250.0,
+        "T_i": 250.0,
     }
     # mode_eregion = dict(n_bauds=16, pulse_length_s=480E-6, ipp=8190E-6)
     mode_eregion = dict(n_bauds=16, tx_pulse_length=480000, ipp=8190000)
@@ -74,9 +74,9 @@ def main():
         "iri_type": "local",
         "iri_time": "fixed parameters",
         "alt_m": 300e3,
-        "N_e": 5e11,
-        "T_e": 2000.0,
-        "T_i": 1200.0,
+        "N_e": 1.2e10,
+        "T_e": 1200.0,
+        "T_i": 1500.0,
     }
     # mode_fregion = dict(n_bauds=1, pulse_length_s=480E-6, ipp=8910E-6)
     mode_fregion = dict(n_bauds=1, tx_pulse_length=480000, ipp=8910000)
@@ -86,7 +86,7 @@ def main():
         "iri_type": "local",
         "iri_time": "fixed parameters",
         "alt_m": 800e3,
-        "N_e": 5e10,
+        "N_e": 1e10,
         "T_e": 2700.0,
         "T_i": 2000.0,
     }
@@ -100,7 +100,7 @@ def main():
         rx_radars=rx_system_list,
         pair_list="cross",
         plasma_parameter_errors=True,
-        ngrid=[100, 150],
+        ngrid=[250, 250],
         extent=plot_extent,
         mtime_estimate_method="std",
         mpclient=client,
