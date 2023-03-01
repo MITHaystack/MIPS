@@ -1177,13 +1177,16 @@ def map_radar_array(
     tx_gain = np.array(tx_gain)
     tx_mask_limits = np.array(steering_mask)
     tx_power = np.array(tx_power)
-    if ipp is None:
 
+    if ipp is None:
         tx_duty_cycle = np.array(tx_duty_cycle)
         t_int = tx_pulse_length / tx_duty_cycle
     else:
         t_int = ipp
-        tx_duty_cycle = [float(tx_pulse_length) / ipp] * len(tx_duty_cycle)
+        pl_duty_cycle = [float(tx_pulse_length) / ipp] * len(tx_duty_cycle)
+        tx_duty_cycle = np.minimum(np.array(tx_duty_cycle),pl_duty_cycle)
+
+    t_int_s = t_int / 1E9
 
     # rx radar parameters
     (
@@ -1348,7 +1351,7 @@ def map_radar_array(
         tx_gain,
         rx_elevation_threshold,
         tx_power,
-        t_int,
+        t_int_s,
         N_e,
         T_i,
         T_e,
