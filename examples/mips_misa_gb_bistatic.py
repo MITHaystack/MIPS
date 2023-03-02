@@ -66,6 +66,9 @@ def main():
         "T_e": 250.0,
         "T_i": 250.0,
     }
+    ionosphere_eregion['ion_species'] = ["O2+","NO+"]
+    ionosphere_eregion['ion_fraction'] = [0.5, 0.5]
+
     # mode_eregion = dict(n_bauds=16, pulse_length_s=480E-6, ipp=8190E-6)
     mode_eregion = dict(n_bauds=16, tx_pulse_length=480000, ipp=8190000)
     ionosphere_fregion = {
@@ -78,6 +81,10 @@ def main():
         "T_e": 1200.0,
         "T_i": 1500.0,
     }
+    ionosphere_fregion['ion_species'] = ["O+"]
+    ionosphere_fregion['ion_fraction'] = [1.0]
+
+
     # mode_fregion = dict(n_bauds=1, pulse_length_s=480E-6, ipp=8910E-6)
     mode_fregion = dict(n_bauds=1, tx_pulse_length=480000, ipp=8910000)
     ionosphere_topside = {
@@ -90,6 +97,10 @@ def main():
         "T_e": 2700.0,
         "T_i": 2000.0,
     }
+    ionosphere_topside['ion_species'] = ["O+","H+","He+"]
+    ionosphere_topside['ion_fraction'] = [0.8, 0.18, 0.02]
+
+
     # mode_topside = dict(n_bauds=1, pulse_length_s=2000E-3, ipp=34600E-6)
     mode_topside = dict(n_bauds=1, tx_pulse_length=2000000, ipp=34600000)
 

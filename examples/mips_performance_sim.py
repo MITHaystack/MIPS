@@ -16,6 +16,7 @@ import dateutil.parser
 import astropy.io.ascii
 import madrigalWeb.madrigalWeb
 from pathlib import Path
+import xarray as xr
 from mips import (
     simulate_data,
     simple_array,
@@ -65,8 +66,11 @@ def model_run_1():
         calculate_plasma_parameter_errors=False,
         mtime_estimate_method="mracf",
         Aeff=Aeff,
+        ion_species = ["O+"],
+        ion_fraction = [1.0],
     )
-    paramvalues["O+"] = 1.0
+    #paramvalues["ion_species"] = ["O+"]
+    #paramvalues["ion_fraction"] = [1.0]
 
     excess_tsys = [0.0, 50.0, 100.0, 150.0]
 
@@ -104,7 +108,7 @@ def model_run_1():
         )
     )
 
-    f, ax = pylab.subplots(2, 1, sharex=True)
+    f, ax = pylab.subplots(2, 1, sharex=False)
     excess_tsys = dataset["excess_rx_noise_K"].values
     for i in range(len(excess_tsys)):
         ax[0].plot(
@@ -135,6 +139,7 @@ def model_run_1():
     ax[1].grid(True)
     figpath = Path("figures")
     figpath.mkdir(exist_ok=True)
+    f.tight_layout()
     f.savefig(figpath.joinpath("is_sim_fixed_ant_area.png"))
 
 
@@ -181,7 +186,8 @@ def model_run_2():
         mtime_estimate_method="mracf",
         calculate_plasma_parameter_errors=False,
     )
-    paramvalues["O+"] = 1.0
+    paramvalues["ion_species"] = ["O+"]
+    paramvalues["ion_fraction"] = [1.0]
 
     xtra_vals = dict(n_elements=n_elements, element_pwr=element_pwr)
     paramvalues.update(xtra_vals)
@@ -204,7 +210,7 @@ def model_run_2():
             attrs["n_elements"],
             attrs["element_pwr"],
             rng / 1e3,
-            attrs["pulse_length_s"] * 1e-6,
+            attrs["pulse_length_ns"] / 1e-6,
             attrs["Ne"],
             attrs["peak_power_W"] / 1e6,
             attrs["duty_cycle"] * 100,
@@ -213,7 +219,7 @@ def model_run_2():
         )
     )
 
-    f, ax = pylab.subplots(2, 1, sharex=True)
+    f, ax = pylab.subplots(2, 1, sharex=False)
     ax[0].plot(dataset["frequency_Hz"].values / 1e6, dataset["snr"].values)
     ax[0].set_title("IS Radar Performance: Fixed Array Element Count")
     ax[0].set_ylabel("SNR")
@@ -230,6 +236,7 @@ def model_run_2():
 
     figpath = Path("figures")
     figpath.mkdir(exist_ok=True)
+    f.tight_layout()
     f.savefig(figpath.joinpath("is_sim_fixed_element_count.png"))
 
 
@@ -277,7 +284,8 @@ def model_run_3():
         mtime_estimate_method="mracf",
         calculate_plasma_parameter_errors=False,
     )
-    paramvalues["O+"] = 1.0
+    paramvalues["ion_species"] = ["O+"]
+    paramvalues["ion_fraction"] = [1.0]
 
     xtra_vals = dict(n_elements=n_elements, element_pwr=element_pwr)
     paramvalues.update(xtra_vals)
@@ -330,6 +338,7 @@ def model_run_3():
     ax[0].set_ylabel("Time to 5% error (sec)")
     ax[0].grid(True)
 
+    f.tight_layout()
     f.savefig("figures/is_sim_constant_peak_pwr.png")
 
 
@@ -378,7 +387,8 @@ def model_run_4():
         mtime_estimate_method="mracf",
         calculate_plasma_parameter_errors=False,
     )
-    paramvalues["O+"] = 1.0
+    paramvalues["ion_species"] = ["O+"]
+    paramvalues["ion_fraction"] = [1.0]
 
     xtra_vals = dict(n_elements=n_elements, element_pwr=tavg_pwr)
     paramvalues.update(xtra_vals)
@@ -454,6 +464,7 @@ def model_run_4():
     ax[0].set_ylabel("Time to 5% error (sec)")
     ax[0].grid(True)
 
+    f.tight_layout()
     f.savefig("figures/is_sim_constant_avg_pwr.png")
 
 
@@ -497,7 +508,8 @@ def model_run_5():
         mtime_estimate_method="mracf",
         calculate_plasma_parameter_errors=False,
     )
-    paramvalues["O+"] = 1.0
+    paramvalues["ion_species"] = ["O+"]
+    paramvalues["ion_fraction"] = [1.0]
 
     coorddict = {
         "n_elements": n_elements,
@@ -515,7 +527,7 @@ def model_run_5():
         datapath.joinpath("model_run_5.nc"), engine="h5netcdf", invalid_netcdf=True
     )
 
-    f, ax = pylab.subplots(2, 1, sharex=True)
+    f, ax = pylab.subplots(2, 1, sharex=False)
 
     ax[0].plot(n_elements, dataset["snr"].values)
 
@@ -540,6 +552,7 @@ def model_run_5():
     ax[1].set_xlim(1, 10000)
     ax[1].grid(True)
 
+    f.tight_layout()
     f.savefig("figures/is_sim_fixed_total_pwr.png")
 
 
@@ -600,7 +613,8 @@ def model_run_6():
         mtime_estimate_method="mracf",
         calculate_plasma_parameter_errors=False,
     )
-    paramvalues["O+"] = 1.0
+    paramvalues["ion_species"] = ["O+"]
+    paramvalues["ion_fraction"] = [1.0]
 
     coorddict = {
         "gdalt": rng_m / 1000,
@@ -650,7 +664,8 @@ def model_run_6():
         mtime_estimate_method="mracf",
         calculate_plasma_parameter_errors=False,
     )
-    paramvalues["O+"] = 1.0
+    paramvalues["ion_species"] = ["O+"]
+    paramvalues["ion_fraction"] = [1.0]
 
     datasetni_cw = simulate_data(data_dims, coorddict, paramvalues)
 
@@ -695,7 +710,8 @@ def model_run_6():
         mtime_estimate_method="mracf",
         calculate_plasma_parameter_errors=False,
     )
-    paramvalues["O+"] = 1.0
+    paramvalues["ion_species"] = ["O+"]
+    paramvalues["ion_fraction"] = [1.0]
 
     datasetamisr = simulate_data(data_dims, coorddict, paramvalues)
 
@@ -722,6 +738,7 @@ def model_run_6():
     ax[2].grid(True)
     ax[2].set_xticks(np.arange(1, 4, 0.5))
 
+    f.tight_layout()
     f.savefig("figures/is_sim_ethiopia_plasma_param.png")
 
     f, ax = pylab.subplots(2, 1)
@@ -773,6 +790,7 @@ def model_run_6():
     ax[1].grid(True)
     ax[1].legend(loc="lower right", fontsize=8)
 
+    f.tight_layout()
     f.savefig("figures/is_sim_ethiopia_uhf_isr_amisr.png")
 
 
@@ -849,8 +867,8 @@ def model_run_7():
     tpulse = 480000
 
     duty = 0.053872
-    eff_tx = 0.51  # empirically determined by SNR model-to-data match
-    eff_rx = 0.51  # empirically determined by SNR model-to-data match
+    eff_tx = 0.49  # empirically determined by SNR model-to-data match
+    eff_rx = 0.49 # empirically determined by SNR model-to-data match
     bw_fac = 1.0
     est_err = 0.01
     vdopp_max = md["vo"]
@@ -890,7 +908,8 @@ def model_run_7():
         mtime_estimate_method="mracf",
         calculate_plasma_parameter_errors=False,
     )
-    paramvalues["O+"] = 1.0
+    paramvalues["ion_species"] = ["O+"]
+    paramvalues["ion_fraction"] = [1.0]
     rng_m = np.array(md["gdalt"]) * 1000
 
     coorddict = {
@@ -939,6 +958,7 @@ def model_run_7():
     ax[2].grid(True)
     ax[2].set_xticks(np.arange(1, 4, 0.5))
 
+    f.tight_layout()
     f.savefig("figures/is_sim_mho_zenith_plasma_param.png")
 
     f = pylab.figure()
@@ -958,6 +978,7 @@ def model_run_7():
     ax[0].grid(True)
     ax[0].legend(fontsize=8)
 
+    f.tight_layout()
     f.savefig("figures/is_sim_mho_zenith_snr.png")
 
     f = pylab.figure()
@@ -972,6 +993,7 @@ def model_run_7():
     ax[0].set_ylabel("Altitude, km")
     ax[0].set_title("MHO Zenith " + dt.isoformat() + " UTC")
 
+    f.tight_layout()
     f.savefig("figures/is_sim_mho_zenith_mtime.png")
 
     f = pylab.figure()
@@ -988,6 +1010,7 @@ def model_run_7():
     ax[0].set_ylabel("Altitude, km")
     ax[0].set_title("MHO Zenith " + dt.isoformat() + " UTC")
 
+    f.tight_layout()
     f.savefig("figures/is_sim_mho_zenith_accuracy.png")
 
     f, ax = pylab.subplots(1, 2, sharey=True)
@@ -1007,6 +1030,7 @@ def model_run_7():
     ax[1].grid(True)
     ax[1].legend(fontsize=8)
 
+    f.tight_layout()
     f.savefig("figures/is_sim_mho_zenith_ratio_bw.png")
 
 
@@ -1083,8 +1107,8 @@ def model_run_8():
     tpulse = 480000
     duty = 0.053872
     # MISA value is too high and we don't quite understand it at this point.
-    eff_tx = 0.6  # empirically determined by SNR model-to-data match
-    eff_rx = 0.6  # empirically determined by SNR model-to-data match
+    eff_tx = 0.65  # empirically determined by SNR model-to-data match
+    eff_rx = 0.65  # empirically determined by SNR model-to-data match
 
     bw_fac = 1.0
     est_err = 0.01
@@ -1126,7 +1150,8 @@ def model_run_8():
         mtime_estimate_method="mracf",
         calculate_plasma_parameter_errors=False,
     )
-    paramvalues["O+"] = 1.0
+    paramvalues["ion_species"] = ["O+"]
+    paramvalues["ion_fraction"] = [1.0]
     rng_m = np.array(md["gdalt"]) * 1000
 
     coorddict = {
@@ -1159,7 +1184,7 @@ def model_run_8():
     ax[0].legend(fontsize=8)
     ax[0].set_xlabel("m^-3")
     ax[0].set_ylabel("Altitude, km")
-    ax[0].set_title("MHO Zenith")
+    ax[0].set_title("MHO MISA")
     ax[0].grid(True)
     ax[0].set_xticks(np.arange(10, 13, 1))
     ax[1].plot(md["te"], md["gdalt"], "g", label="Te")
@@ -1176,6 +1201,7 @@ def model_run_8():
     ax[2].grid(True)
     ax[2].set_xticks(np.arange(1, 4, 0.5))
 
+    f.tight_layout()
     f.savefig("figures/is_sim_mho_misa_plasma_param.png")
 
     f = pylab.figure()
@@ -1186,16 +1212,17 @@ def model_run_8():
     ax[0].text(
         2,
         450,
-        "Zenith TX Eff: %.2f\nZenith RX Eff: %.2f\nZenith Tsys: %.1f\nZenith Peak Pwr: %.1f MW"
+        "MISA TX Eff: %.2f\nMISA RX Eff: %.2f\nMISA Tsys: %.1f\nMISA Peak Pwr: %.1f MW"
         % (eff_tx, eff_rx, md["systmp"][0], md["power"][0] / 1e3),
     )
     ax[0].set_xlabel("SNR")
     ax[0].set_ylabel("Altitude, km")
-    ax[0].set_title("MHO Zenith " + dt.isoformat() + " UTC")
+    ax[0].set_title("MHO MISA " + dt.isoformat() + " UTC")
     ax[0].grid(True)
     ax[0].legend(fontsize=8)
 
-    f.savefig("figures/is_sim_mho_zenith_snr.png")
+    f.tight_layout()
+    f.savefig("figures/is_sim_mho_misa_snr.png")
 
     f = pylab.figure()
     ax = [pylab.gca()]
@@ -1209,6 +1236,7 @@ def model_run_8():
     ax[0].set_ylabel("Altitude, km")
     ax[0].set_title("MHO MISA " + dt.isoformat() + " UTC")
 
+    f.tight_layout()
     f.savefig("figures/is_sim_mho_misa_mtime.png")
 
     f = pylab.figure()
@@ -1225,6 +1253,7 @@ def model_run_8():
     ax[0].set_ylabel("Altitude, km")
     ax[0].set_title("MHO MISA " + dt.isoformat() + " UTC")
 
+    f.tight_layout()
     f.savefig("figures/is_sim_mho_misa_accuracy.png")
 
     f, ax = pylab.subplots(1, 2, sharey=True)
@@ -1244,6 +1273,7 @@ def model_run_8():
     ax[1].grid(True)
     ax[1].legend(fontsize=8)
 
+    f.tight_layout()
     f.savefig("figures/is_sim_mho_misa_ratio_bw.png")
 
 
@@ -1313,7 +1343,8 @@ def model_run_9():
         mtime_estimate_method="mracf",
         calculate_plasma_parameter_errors=False,
     )
-    paramvalues["O+"] = 1.0
+    paramvalues["ion_species"] = ["O+"]
+    paramvalues["ion_fraction"] = [1.0]
 
     coorddict = {"pulse_length_ns": tpulse}
 
@@ -1361,7 +1392,8 @@ def model_run_9():
         mtime_estimate_method="mracf",
         calculate_plasma_parameter_errors=False,
     )
-    paramvalues["O+"] = 1.0
+    paramvalues["ion_species"] = ["O+"]
+    paramvalues["ion_fraction"] = [1.0]
     datasetmho = simulate_data(data_dims, coorddict, paramvalues)
 
     f = pylab.figure()
@@ -1395,6 +1427,7 @@ def model_run_9():
         % (mho_range / 1e3, ne, te, ti)
     )
 
+    f.tight_layout()
     f.savefig("figures/is_snr_amisr_vs_misa_groves_mtime.png")
 
     f = pylab.figure()
@@ -1415,7 +1448,280 @@ def model_run_9():
         % (mho_range / 1e3, ne, te, ti)
     )
 
+    f.tight_layout()
     f.savefig("figures/is_snr_amisr_vs_misa_groves_snr.png")
+
+
+def model_run_10():
+    """Model run 10: sweep frequency for fixed effective area and power
+    in the case of a mono-static radar at different altitudes
+    (parabolic antenna radar chart)
+    """
+    print("model 10 : frequency altitude versus altitude")
+
+
+    t = datetime.datetime(2015, 1, 15, 15, 0, 0)
+    bhd_lat = 11.587  # deg
+    bhd_lon = 37.357  # deg
+    salt = 80  # km
+    ealt = 1000  # km
+    dalt = 10 # km
+
+    # use the online model for ease and as an example
+    # example for the local IRI model is in the mapping code...
+    md = iri2016py(t, bhd_lat, bhd_lon, salt, ealt, dalt)
+    rng_m = md["alt_km"].values * 1000
+    alt_km = md["alt_km"].values
+
+
+    frequencies = np.arange(50e6, 3000e6, 10e6)
+    Aeff = 1000.0
+    pwr = 1e6
+    ant_eff = 0.6
+    gn = 10 * np.log10(4 * math.pi * ant_eff * Aeff / (sc.c / frequencies) ** 2.0)
+
+    paramvalues = dict(
+        peak_power_W=pwr,
+        maximum_range_m=2000e3,
+        n_bauds=1,
+        pulse_length_ns=1000E3,
+        duty_cycle=0.1,
+        efficiency_tx=1.0,
+        efficiency_rx=1.0,
+        bandwidth_factor=1.0,
+        tsys_type="fixed_medium",
+        excess_rx_noise_K = 100.0,
+        estimation_error_stdev=0.05,
+        maximum_bulk_doppler=1500.0,
+        monostatic=True,
+        tx_target_rx_angle=0,
+        bistatic_volume_factor=1.0,
+        quick_bandwidth_estimate=True,
+        calculate_plasma_parameter_errors=False,
+        mtime_estimate_method="mracf",
+        Aeff=Aeff,
+    )
+    paramvalues["ion_species"] = ["O+","N+","H+","He+","O2+","NO+"]
+
+    altitudes = rng_m
+
+    # construct ion composition from iri model run
+    #
+    ion_fraction_table = []
+    frOp = md["nO+"].values / md["ne"].values
+    frNp = md["nN+"].values / md["ne"].values
+    frHp = md["nH+"].values / md["ne"].values
+    frHep = md["nHe+"].values / md["ne"].values
+    frO2p = md["nO2+"].values / md["ne"].values
+    frNOp = md["nNO+"].values / md["ne"].values
+
+
+    for aidx, alt in enumerate(altitudes):
+        ion_fraction_entry = [frOp[aidx],frNp[aidx],frHp[aidx],frHep[aidx],frO2p[aidx],frNOp[aidx]]
+        ion_fraction_table.append(ion_fraction_entry)
+
+    #print(ion_fraction_table)
+    # hack to bypass coordinate conversion
+
+    dataset = None
+
+    for aidx, alt in enumerate(altitudes):
+        paramvalues["ion_fraction"] = np.array(ion_fraction_table[aidx])
+
+        coorddict = {
+            "gain_tx_dB": ("frequency_Hz", gn),
+            "gain_rx_dB": ("frequency_Hz", gn),
+            "frequency_Hz": frequencies,
+        }
+
+        paramvalues["tx_to_target_range_m"] = rng_m[aidx]
+        paramvalues["target_to_rx_range_m"] = rng_m[aidx]
+        paramvalues["Ne"] = np.array([md["ne"][aidx]])
+        paramvalues["Te"] = np.array([md["Te"][aidx]])
+        paramvalues["Ti"] = np.array([md["Ti"][aidx]])
+        paramvalues["ion_fraction"] = np.array(ion_fraction_table[aidx])
+
+        #print(paramvalues["ion_fraction"])
+
+        data_dims = {
+            "frequency_Hz": len(frequencies),
+            #"altitude": len(altitudes),
+        }
+        dsa = simulate_data(data_dims, coorddict, paramvalues)
+        #print("DSA ", dsa['snr'])
+        if not dataset:
+            dataset = dsa
+        else:
+            dataset = xr.concat([dataset,dsa],'altitude')
+    #print(dataset)
+    # save data to disk
+    datapath = Path("model_runs")
+    datapath.mkdir(exist_ok=True)
+    dataset.to_netcdf(
+        datapath.joinpath("model_run_10.nc"), engine="h5netcdf", invalid_netcdf=True
+    )
+    # make the plots
+    attrs = dataset.attrs
+    lstr = (
+        "pl=%.0f ms\n%.0fMW peak @ d=%.0f%%\n$A_{\mathrm{eff}}=%1.0f$ m$^{2}$"
+        % (
+            attrs["pulse_length_ns"]/1e6,
+            attrs["peak_power_W"] / 1e6,
+            attrs["duty_cycle"] * 100,
+            attrs["Aeff"],
+        )
+    )
+
+    alt_display_list = np.array([80.0E3,90.0E3,100.0E3,200.0E3,250.0E3,500.0E3,1000.0E3,1200.0E3])
+    f, ax = pylab.subplots(1, 1)
+    alt_vals_sel = dataset["altitude"].values
+
+    #for i in range(len(alt_vals_sel)):
+    #    alt = altitudes[i]
+    #    if alt in alt_display_list:
+    #        ax[0].plot(
+    #            dataset["frequency_Hz"].values / 1e6,
+    #            dataset["snr"].values[:, i],
+    #            label="$alt=%1.0f$ km" % (alt/1E3),
+    #            )
+    #ax[0].legend(fontsize=8)
+    #ax[0].text(1050, 1.0, lstr, fontsize=8, backgroundcolor=(1, 1, 1, 0.5))
+    #ax[0].set_title("IS Radar Frequency Dependence for Fixed Aeff")
+    #ax[0].set_ylabel("SNR")
+    #ax[0].set_ylim(0, 15.0)
+    #ax[0].set_xlim(0, 3000)
+    #ax[0].grid(True)
+
+    lstr = "%.0f m^2 Aeff" % Aeff
+    for i in range(len(alt_vals_sel)):
+        alt = altitudes[i]
+        if alt in alt_display_list:
+            ax.semilogy(
+                dataset["frequency_Hz"].values / 1e6,
+                dataset["measurement_time"].values[i, :],
+                label="$alt=%1.0f$ km" % (alt/1E3),
+                )
+
+    ax.set_title("IS Radar Performance (Fixed Power Aperture)")
+    ax.set_xlabel("Freq (MHz)")
+    ax.set_ylabel("Meas. speed (sec)")
+    #ax.set_ylim(0, 10000)
+    ax.legend(fontsize=8,loc='upper right')
+    ax.grid(True)
+    figpath = Path("figures")
+    figpath.mkdir(exist_ok=True)
+    f.savefig(figpath.joinpath("is_sim_alt_fixed_ant_area.png"))
+
+def model_run_11():
+    """Model run 1: sweep bauds for fixed effective area and power
+    in the case of a mono-static radar
+    (parabolic antenna radar chart)
+    """
+    print("model 11 : baud sweep for a fixed effective area and power")
+
+    frequencies = np.arange(50e6, 3000e6, 5e6)
+    Aeff = 1000.0
+    pwr = 1e6
+    ant_eff = 0.6
+    gn = 10 * np.log10(4 * math.pi * ant_eff * Aeff / (sc.c / frequencies) ** 2.0)
+
+    paramvalues = dict(
+        peak_power_W=pwr,
+        maximum_range_m=300e3,
+        pulse_length_ns=500E3,
+        duty_cycle=0.1,
+        efficiency_tx=1.0,
+        efficiency_rx=1.0,
+        bandwidth_factor=1.0,
+        tx_to_target_range_m=100e3,
+        target_to_rx_range_m=100e3,
+        Ne=1e11,
+        Te=1000.0,
+        Ti=1000.0,
+        tsys_type="fixed_zero",
+        excess_rx_noise_K = 100.0,
+        estimation_error_stdev=0.05,
+        maximum_bulk_doppler=1500.0,
+        monostatic=True,
+        tx_target_rx_angle=0,
+        bistatic_volume_factor=1.0,
+        quick_bandwidth_estimate=False,
+        calculate_plasma_parameter_errors=False,
+        mtime_estimate_method="mracf",
+        Aeff=Aeff,
+    )
+    paramvalues["ion_species"] = ["NO+","O2+"]
+    paramvalues["ion_fraction"] = [0.5,0.5]
+
+    bauds = [1, 7, 13, 16, 32]
+
+    coorddict = {
+        "gain_tx_dB": ("frequency_Hz", gn),
+        "gain_rx_dB": ("frequency_Hz", gn),
+        "frequency_Hz": frequencies,
+        "n_bauds": bauds,
+    }
+
+    data_dims = {
+        "frequency_Hz": len(frequencies),
+        "n_bauds": len(bauds),
+    }
+    dataset = simulate_data(data_dims, coorddict, paramvalues)
+    # save data to disk
+    datapath = Path("model_runs")
+    datapath.mkdir(exist_ok=True)
+    dataset.to_netcdf(
+        datapath.joinpath("model_run_11.nc"), engine="h5netcdf", invalid_netcdf=True
+    )
+    # make the plots
+    attrs = dataset.attrs
+    lstr = (
+        "%.0f km alt\npl=%.0f ms\nne=%.0e m$^{-3}$\n%.0fMW peak @ d=%.0f%%\nTe=%.0f,Ti=%.0f\n$A_{\mathrm{eff}}=%1.0f$ m$^{2}$"
+        % (
+            attrs["target_to_rx_range_m"] / 1e3,
+            attrs["pulse_length_ns"]/1e6,
+            attrs["Ne"],
+            attrs["peak_power_W"] / 1e6,
+            attrs["duty_cycle"] * 100,
+            attrs["Te"],
+            attrs["Ti"],
+            attrs["Aeff"],
+        )
+    )
+
+    f, ax = pylab.subplots(2, 1, sharex=True)
+    bauds = dataset["n_bauds"].values
+    for i in range(len(bauds)):
+        ax[0].plot(
+            dataset["frequency_Hz"].values / 1e6,
+            dataset["snr"].values[:, i],
+            label="$bauds=%1.0f$" % (bauds[i]),
+        )
+    ax[0].legend(fontsize=8)
+    ax[0].text(975, 1.0, lstr, fontsize=8, backgroundcolor=(1, 1, 1, 0.5))
+    ax[0].set_title("IS Radar Performance (Fixed Power Aperture)")
+    ax[0].set_ylabel("SNR")
+    ax[0].set_ylim(0, 2.0)
+    ax[0].set_xlim(0, 3000)
+    ax[0].grid(True)
+
+    lstr = "%.0f m^2 Aeff" % Aeff
+    for i in range(len(bauds)):
+        ax[1].plot(
+            dataset["frequency_Hz"].values / 1e6,
+            dataset["measurement_time"].values[:, i],
+            label="$bauds=%1.0f$" % (bauds[i]),
+        )
+
+    ax[1].set_xlabel("Freq (MHz)")
+    ax[1].set_ylabel("Meas. speed (sec)")
+    ax[1].set_ylim(0, 100)
+    ax[1].legend(fontsize=8)
+    ax[1].grid(True)
+    figpath = Path("figures")
+    figpath.mkdir(exist_ok=True)
+    f.savefig(figpath.joinpath("is_sim_bauds.png"))
+
 
 
 def plot_rxnoise():
@@ -1437,13 +1743,15 @@ def plot_rxnoise():
 if __name__ == "__main__":
 
     print(version_str)
-    plot_rxnoise()
-    model_run_1()
-    model_run_2()
-    model_run_3()
-    model_run_4()
-    model_run_5()
-    model_run_6()
-    model_run_7()
-    model_run_8()
-    model_run_9()
+    #plot_rxnoise()
+    #model_run_1()
+    #model_run_2()
+    #model_run_3()
+    #model_run_4()
+    #model_run_5()
+    #model_run_6()
+    #model_run_7()
+    #model_run_8()
+    #model_run_9()
+    #model_run_10()
+    model_run_11()
