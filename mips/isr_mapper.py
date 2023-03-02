@@ -12,6 +12,7 @@ import datetime
 import numpy as np
 import numpy.ma as ma
 import scipy.constants as c
+import copy
 
 from .coord import geodetic_to_az_el_r, azel_ecef, geodetic2ecef
 from .isr_performance import is_snr, iri2016
@@ -535,7 +536,6 @@ def isr_array_sim(
         quick_bandwidth_estimate=True,
         mtime_estimate_method=mtime_estimate_method,  #'std'
     )
-    const_dict["O+"] = 1.0
 
     # Set up IRI stuff
     if ionosphere["use_iri"]:
@@ -597,6 +597,14 @@ def isr_array_sim(
         const_dict["Ne"] = ionosphere["N_e"]
         const_dict["Te"] = ionosphere["T_e"]
         const_dict["Ti"] = ionosphere["T_i"]
+        if ionosphere["ion_species"] and ionosphere["ion_fraction"]:
+            const_dict["ion_species"] = copy.deepcopy(ionosphere["ion_species"])
+            const_dict["ion_fraction"] = copy.deepcopy(ionosphere["ion_fraction"])
+        else:
+            pfunc("No ion_species or ion_fraction specified, defaulting to all O+...")
+            const_dict["ion_species"] = ["O+"]
+            const_dict["ion_fraction"] = [1.0]
+
 
     # target ionosphere grid to evaluate
     lats = np.linspace(eval_grid[0], eval_grid[1], num=n_grid_lat)

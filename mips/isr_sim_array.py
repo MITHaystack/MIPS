@@ -3,6 +3,7 @@
 import xarray as xr
 from .isr_performance import is_snr
 import numpy as np
+import copy
 
 
 ionnamelist = ["O+", "NO+", "N2+", "O2+", "N+", "H+", "He+"]
@@ -59,8 +60,8 @@ def prunedict(cur_dict):
         "maximum_bulk_doppler",
         "tx_target_rx_angle",
         "bistatic_volume_factor",
-        "ionspecies",
-        "ionfracs",
+        "ion_species",
+        "ion_fraction",
         "mtime_estimate_method",
     ]
     inputkeys = list(cur_dict.keys())
@@ -99,7 +100,7 @@ def check_dicts(coorddict, paramvalues):
         "peak_power_W",
         "maximum_range_m",
         "n_bauds",
-        "pulse_length_s",
+        "pulse_length_ns",
         "duty_cycle",
         "gain_tx_dB",
         "gain_rx_dB",
@@ -118,30 +119,54 @@ def check_dicts(coorddict, paramvalues):
         "tx_target_rx_angle",
         "bistatic_volume_factor",
         "mtime_estimate_method",
+        "ion_species",
+        "ion_fraction",
     ]
 
     allnames = att_names + varnames
-
     all_keys = list(paramvalues.keys()) + list(coorddict.keys())
 
+    # check that all our keys are either parameters or coordinates
+    for n in allnames:
+        if not n in all_keys:
+            outstr = "Missing expected parameter " + n
+            return True, outstr
+
+    # check that our ion species are known to the model
     outstr = ""
     ion_missing = True
     err_flag = False
 
-    for ikey in all_keys:
-        if ikey in ionnamelist:
-            ion_missing = False
-            continue
-        if ikey in allnames:
-            allnames.remove(ikey)
-        # else:
-        #     outstr = "{} is not a valid input to the simulation.".format(ikey)
-        #     err_flag = True
-        #     return err_flag, outstr
+    if "ion_species" in paramvalues:
+        ion_list = paramvalues["ion_species"]
+
+        for ival in ion_list:
+            if ival in ionnamelist:
+                ion_missing = False
+            else:
+                outstr = "Unknown ion species " + ival
+                return True, outstr
+
+    elif "ion_species" in coorddict:
+        altitude, ion_list_table = coorddict["ion_species"]
+
+        for t in ion_list_table:
+            for ival in t:
+                if ival in ionnamelist:
+                    ion_missing = False
+                else:
+                    outstr = "Unknown ion species " + ival
+                    return True, outstr
+    else:
+        outstr = "Missing ion species list."
+        return True, outstr
+
+
 
     if ion_missing:
         err_flag = True
         outstr = "Missing a valid ion species."
+
     return err_flag, outstr
 
 
@@ -187,9 +212,10 @@ def get_default(coordvals):
         frequency_Hz=440e6,
         excess_rx_noise_K=0.0,
         mtime_estimate_method="std",
+        ion_species = ["O+"],
+        ion_fraction = [1.0],
     )
 
-    default_params["O+"] = 1.0
     coorddict = {}
     for ikey in coordvals:
         coorddict[ikey] = default_params[ikey]
@@ -233,8 +259,7 @@ def rerunsim(ds, i_el):
         indtuple = tuple(indtuple)
         cursimdict[iname] = ds[iname].values[indtuple]
     # deal with the ion species by getting them into the list format.
-    iondict = {i: cursimdict[i] for i in ionnamelist if i in cursimdict.keys()}
-    cursimdict["ionspecies"], cursimdict["ionfracs"] = get_ion_lists(iondict)
+
     cursimdict = prunedict(cursimdict)
     cursimdict["pfunc"] = print
 
@@ -316,7 +341,7 @@ def simulate_data(data_dims, coorddict, paramvalues, mpclient=None, pfunc=print)
         # unravel everything
         curcoords = np.unravel_index(i_el, dimlist)
         # copy the parameter dictionary because those will be atributes that won't vary
-        cursimdict = paramvalues.copy()
+        cursimdict = copy.deepcopy(paramvalues)
         # go through the coordinates and get all of them.
         for iname, ival in coorddict.items():
             curdims = ds[iname].dims
@@ -329,9 +354,7 @@ def simulate_data(data_dims, coorddict, paramvalues, mpclient=None, pfunc=print)
                 indtuple[inum] = curcoords[dim_ind]
             indtuple = tuple(indtuple)
             cursimdict[iname] = ds[iname].values[indtuple]
-        # deal with the ion species by getting them into the list format.
-        iondict = {i: cursimdict[i] for i in ionnamelist if i in cursimdict.keys()}
-        cursimdict["ionspecies"], cursimdict["ionfracs"] = get_ion_lists(iondict)
+
         cursimdict = prunedict(cursimdict)
         cursimdict["pfunc"] = pfunc
 

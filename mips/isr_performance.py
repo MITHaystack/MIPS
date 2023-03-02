@@ -424,13 +424,13 @@ def iri2016(dt, gdlat, gdlon, gdalt_start, gdalt_end, gdalt_step):
     return a
 
 
-def speccheck(ionspecies, pfunc=print):
+def speccheck(ion_species, pfunc=print):
     """Used for assert statments to check if species is valid.
 
     Parameters
     ----------
-    ionspecies : list
-        Names of ionspecies used. Includes 'O+', 'NO+', 'N2+', 'O2+', 'N+', 'H+', 'He+'.
+    ion_species : list
+        Names of ion species used. Includes 'O+', 'NO+', 'N2+', 'O2+', 'N+', 'H+', 'He+'.
 
     Returns
     -------
@@ -441,9 +441,9 @@ def speccheck(ionspecies, pfunc=print):
     maslist = ["O+", "NO+", "N2+", "O2+", "N+", "H+", "He+"]
 
     allgood = True
-    for ion in ionspecies:
+    for ion in ion_species:
         if not ion in maslist:
-            pfunc("{} not a recognized ionspecies".format(ion))
+            pfunc("{} not a recognized ion species".format(ion))
             allgood = False
     return allgood
 
@@ -453,8 +453,8 @@ def is_bandwidth_estimate(
     Ne,
     Te,
     Ti,
-    ionspecies,
-    ionfracs,
+    ion_species,
+    ion_fraction,
     tx_target_rx_angle,
     maximum_bulk_doppler,
     bandwidth_factor,
@@ -474,10 +474,10 @@ def is_bandwidth_estimate(
         Electron temperature in K.
     Ti : float
         Ion temperature in K.
-    ionspecies : list
-        Names of ionspecies used. Includes 'O+', 'NO+', 'N2+', 'O2+', 'N+', 'H+', 'He+'.
-    ionfracs : list
-        Fractions of each ionspecies. Sum must equal 1.
+    ion_species : list
+        Names of ion species used. Includes 'O+', 'NO+', 'N2+', 'O2+', 'N+', 'H+', 'He+'.
+    ion_fraction : list
+        Fractions of each ion species. Sum must equal 1.
     maximum_bulk_doppler :
         maximum line-of-sight Doppler velocity expected, m/s
     tx_target_rx_angle : float
@@ -500,9 +500,9 @@ def is_bandwidth_estimate(
     """
 
     # sanity checks
-    assert (np.array(ionfracs) >= 0.0).all(), "Can't have negative ion fractions."
-    assert ISRSpectrum.ioncheck(ionspecies), "Invalid ionspecies"
-    assert sum(ionfracs) < 1.1 and sum(ionfracs) > 0.9, "Ion fractions must equal 1."
+    assert (np.array(ion_fraction) >= 0.0).all(), "Can't have negative ion fractions."
+    assert ISRSpectrum.ioncheck(ion_species), "Invalid ion species"
+    assert sum(ion_fraction) < 1.1 and sum(ion_fraction) > 0.9, "Ion fractions must equal 1."
 
     # Estimate from first principles without an actual IS theoretical calculation.
 
@@ -516,8 +516,8 @@ def is_bandwidth_estimate(
     wavelength = sc.c / frequency_Hz
 
     # ion-acoustic velocity
-    i_ion = np.argmax(ionfracs)
-    ion_mass = ISRSpectrum.getionmass(ionspecies[i_ion])
+    i_ion = np.argmax(ion_fraction)
+    ion_mass = ISRSpectrum.getionmass(ion_species[i_ion])
     v_ion_acoustic = (((sc.k * Ti) / (ion_mass * sc.m_p)) * (1.0 + Te / Ti)) ** 0.5
 
     # Doppler shift due to i-a velocity
@@ -547,7 +547,7 @@ def is_bandwidth_estimate(
                 dFlag=False,
             )
             omega, spec = iss.getspecsimple(
-                Ne, Te, Ti, ionspecies, ionfracs, vel=0.0, rcsflag=False
+                Ne, Te, Ti, ion_species, ion_fraction, vel=0.0, rcsflag=False
             )
 
             spec = spec / spec.max()
@@ -581,7 +581,7 @@ def is_bandwidth_estimate(
     return (line_shift, bandwidth, h_lambda_inv)
 
 
-def is_calculate_spectrum(velocity_ms, frequency_Hz, Ti, Te, Ne, ionspecies, ionfracs):
+def is_calculate_spectrum(velocity_ms, frequency_Hz, Ti, Te, Ne, ion_species, ion_fraction):
     """
     is spectrum to obtain linearized errors
 
@@ -597,10 +597,10 @@ def is_calculate_spectrum(velocity_ms, frequency_Hz, Ti, Te, Ne, ionspecies, ion
         Electron temperature in K.
     Ne : float
         Electron density at the given altitude, m^-3
-    ionspecies : list
-        Names of ionspecies used. Includes 'O+', 'NO+', 'N2+', 'O2+', 'N+', 'H+', 'He+'.
-    ionfracs : list
-        Fractions of each ionspecies. Sum must equal 1.
+    ion_species : list
+        Names of ion species used. Includes 'O+', 'NO+', 'N2+', 'O2+', 'N+', 'H+', 'He+'.
+    ion_fraction : list
+        Fractions of each ion species. Sum must equal 1.
 
     Returns
     -------
@@ -617,7 +617,7 @@ def is_calculate_spectrum(velocity_ms, frequency_Hz, Ti, Te, Ne, ionspecies, ion
         centerFrequency=frequency_Hz, nspec=64, sampfreq=50e3, dFlag=False
     )
     spectrum_freqs, spectrum = iss.getspecsimple(
-        Ne, Te, Ti, ionspecies, ionfracs, vel=velocity_ms, rcsflag=False
+        Ne, Te, Ti, ion_species, ion_fraction, vel=velocity_ms, rcsflag=False
     )
 
     spectrum = spectrum / spectrum.max()
@@ -632,8 +632,8 @@ def is_calculate_plasma_parameter_errors(
     Ti,
     Te,
     Ne,
-    ionspecies,
-    ionfracs,
+    ion_species,
+    ion_fraction,
     snr,
     estimation_error_stdev,
     debug_print=False,
@@ -653,10 +653,10 @@ def is_calculate_plasma_parameter_errors(
         Electron temperature in K.
     Ne : float
         Electron density at the given altitude, m^-3
-    ionspecies : list
-        Names of ionspecies used. Includes 'O+', 'NO+', 'N2+', 'O2+', 'N+', 'H+', 'He+'.
-    ionfracs : list
-        Fractions of each ionspecies. Sum must equal 1.
+    ion_species : list
+        Names of ion species used. Includes 'O+', 'NO+', 'N2+', 'O2+', 'N+', 'H+', 'He+'.
+    ion_fraction : list
+        Fractions of each ion species. Sum must equal 1.
     snr : float
         signal-to-noise ratio linear scale, unitless
     estimation_error_stdev : float
@@ -684,7 +684,7 @@ def is_calculate_plasma_parameter_errors(
     df = np.array([0.01 * Ne0, 0.01 * Ti0, 0.01 * Te0, 10.0])
 
     (freqs, spec0) = is_calculate_spectrum(
-        vel0, frequency_Hz, Ti0, Te0, Ne0, ionspecies, ionfracs
+        vel0, frequency_Hz, Ti0, Te0, Ne0, ion_species, ion_fraction
     )
 
     spec_scale = np.max(spec0)
@@ -702,7 +702,7 @@ def is_calculate_plasma_parameter_errors(
         Te = pars1[2]
         vel = pars1[3]
         (freqs, spec1) = is_calculate_spectrum(
-            vel, frequency_Hz, Ti, Te, Ne, ionspecies, ionfracs
+            vel, frequency_Hz, Ti, Te, Ne, ion_species, ion_fraction
         )
         spec1 = spec1 * (Ne / Ne0)
         J[:, i] = (spec1 / spec_scale - spec0 / spec_scale) / df[i]
@@ -771,8 +771,8 @@ def is_snr(
     monostatic,
     tx_target_rx_angle,
     bistatic_volume_factor,
-    ionspecies,
-    ionfracs,
+    ion_species,
+    ion_fraction,
     quick_bandwidth_estimate,
     calculate_plasma_parameter_errors,
     mtime_estimate_method,
@@ -825,10 +825,10 @@ def is_snr(
         angle between transmitter target and target observer lines, deg
     bistatic_volume_factor : float
         the fraction of bistatic volume compared with monostatic measurement volume (V_bistatic/V_monostatic), unitless
-    ionspecies : list
-        Names of ionspecies used. Includes 'O+', 'NO+', 'N2+', 'O2+', 'N+', 'H+', 'He+'.
-    ionfracs : list
-        Fractions of each ionspecies. Sum must equal 1.
+    ion_species : list
+        Names of ion species used. Includes 'O+', 'NO+', 'N2+', 'O2+', 'N+', 'H+', 'He+'.
+    ion_fraction : list
+        Fractions of each ion species. Sum must equal 1.
     quick_bandwidth_estimate : bool
         if True (default), a single ion is assumed with AMU = ion mass 1. If False, a full 2-ion IS spectral calculation is used for bandwidth estimation.
     mtime_estimate_method : str
@@ -877,8 +877,8 @@ def is_snr(
         monostatic=True,
         tx_target_rx_angle=0.0,
         bistatic_volume_factor=1.0,
-        ionspecies=['O+'],
-        ionfracs = [1.],
+        ion_species=['O+'],
+        ion_fraction = [1.],
         quick_bandwidth_estimate=True,
         calculate_plasma_parameter_errors=True
     """
@@ -1047,8 +1047,8 @@ def is_snr(
         Ne,
         Te,
         Ti,
-        ionspecies,
-        ionfracs,
+        ion_species,
+        ion_fraction,
         tx_target_rx_angle,
         maximum_bulk_doppler,
         bandwidth_factor,
@@ -1192,8 +1192,8 @@ def is_snr(
             Ti,
             Te,
             Ne,
-            ionspecies,
-            ionfracs,
+            ion_species,
+            ion_fraction,
             snr,
             estimation_error_stdev,
         )
