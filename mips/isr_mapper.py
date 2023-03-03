@@ -652,6 +652,7 @@ def isr_array_sim(
     bistatic_volume = np.zeros([n_paths, len(lats), len(longs)])
     # HACK: Can loose loop if coordinate transforms work for arrays.
     # Loop through all of the locations and pairs
+
     for i, lat in enumerate(lats):
         for j, lon in enumerate(longs):
             for tx_i, rx_i, path_idx in zip(tx_idx, rx_idx, pairs):
@@ -674,19 +675,19 @@ def isr_array_sim(
                     tx_lat[tx_i], tx_lon[tx_i], tx_alt[tx_i], lat, lon, tgt_alt
                 )
                 (az_rx, el_rx, r_rx) = geodetic_to_az_el_r(
-                    rx_lat[rx_i], rx_lon[rx_i], rx_alt[tx_i], lat, lon, tgt_alt
+                    rx_lat[rx_i], rx_lon[rx_i], rx_alt[rx_i], lat, lon, tgt_alt
                 )
 
                 if ismono:
                     (az_tr, el_tr, r_tr) = (0.0, 0.0, 0.0)
                 else:
                     (az_tr, el_tr, r_tr) = geodetic_to_az_el_r(
-                        tx_lat[rx_i],
-                        tx_lon[rx_i],
+                        tx_lat[tx_i],
+                        tx_lon[tx_i],
                         tx_alt[tx_i],
                         rx_lat[rx_i],
                         rx_lon[rx_i],
-                        rx_alt[tx_i],
+                        rx_alt[rx_i],
                     )
 
                 tx_ecef = geodetic2ecef(tx_lat[tx_i], tx_lon[tx_i], tx_alt[tx_i])
