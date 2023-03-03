@@ -12,6 +12,7 @@ import scipy.constants as sc
 import scipy.interpolate
 import math
 import numpy as np
+import xarray
 import urllib.request, urllib.parse, urllib.error
 import urllib.request, urllib.error, urllib.parse
 import datetime
@@ -20,6 +21,8 @@ import astropy.io.ascii
 import madrigalWeb.madrigalWeb
 import ISRSpectrum
 import iri2016.base as iri2016_base  # pip install - written by Michael Hirsch; avoiding name conflict with old method
+
+from .coord import geographic_to_cartesian, antenna_to_cartesian, cartesian_to_geographic
 
 version_str = "MIPS V2.2.1"
 
@@ -448,6 +451,59 @@ def speccheck(ion_species, pfunc=print):
     return allgood
 
 
+def sweep_iri_along_beam(dt, latitude, longitude, altitude, az_dir, el_dir, start_range, end_range, delta_range):
+    """ Sweep the IRI model along a radar beam and compute the model outputs.
+
+        dt, datetime for the model run time
+        latitude, radar latitude
+        longitude, radar longitude
+        altitude, radar altitude
+        az_dir, radar pointing direction in azimuth
+        el_dir, radar pointing direction in elevation angle
+        start_range, range along beam to start sweep in km
+        end_range, range along beam to end sweep in km
+        delta_range, range step in km
+
+        return xarray model evaluation versus range with latitude, longitude, and altitude evaluated
+
+    """
+
+    # convert to ECF (x,y,z) start point
+    radar_x, radar_y = geographic_to_cartesian(longitude, latitude, {'lon_0':longitude,'lat_0':latitude,'proj':'pyart_aeqd'})
+    radar_z = altitude # in meters
+    # compute cartesian coordinates
+    ranges = np.arange(start_range, end_range, delta_range)
+    # ranges are in km
+    beam_x, beam_y, beam_z = antenna_to_cartesian(ranges/1000.0, az_dir, el_dir)
+    # note result is in meters
+
+    # offset to ECF
+    sweep_x = radar_x + beam_x
+    sweep_y = radar_y + beam_y
+    sweep_z = radar_z + beam_z
+
+    # convert ECF to geodetic lat, lon, alt
+    sweep_lon, sweep_lat = cartesian_to_geographic(sweep_x, sweep_y, {'lon_0':longitude,'lat_0':latitude,'proj':'pyart_aeqd'})
+    sweep_alt = sweep_z
+
+    #print(sweep_lat)
+    #print(sweep_lon)
+    #print(ranges)
+    #print(sweep_alt)
+
+    # Sweep IRI model in altitude along beam locations
+    ionosphere = None
+    for idx, alt in enumerate(sweep_alt):
+        iri = iri2016py(dt,sweep_lat[idx],sweep_lon[idx],alt/1e3,alt/1e3,1.0)
+        #print(iri)
+        if ionosphere is None:
+            ionosphere = iri
+        else:
+            ionosphere = xarray.concat((ionosphere, iri), dim="alt_km")
+
+    return ionosphere, ranges
+
+
 def is_bandwidth_estimate(
     frequency_Hz,
     Ne,
@@ -459,6 +515,7 @@ def is_bandwidth_estimate(
     maximum_bulk_doppler,
     bandwidth_factor,
     quick_estimate_mode=True,
+    pfunc=print
 ):
 
     """
@@ -565,9 +622,10 @@ def is_bandwidth_estimate(
 
         except:
 
-            raise ValueError(
-                "Could not find bandwidth in realistic spectral case.  Try increasing sampling frequency."
-            )
+            #raise ValueError(
+            #    "Could not find bandwidth in realistic spectral case.  Try increasing sampling frequency."
+            #)
+            pfunc("Could not find bandwidth in realistic spectral case. Default to simple spectral case.")
 
     # common calculations regardless of mode
 

@@ -341,7 +341,7 @@ def simulate_data(data_dims, coorddict, paramvalues, mpclient=None, pfunc=print)
         # unravel everything
         curcoords = np.unravel_index(i_el, dimlist)
         # copy the parameter dictionary because those will be atributes that won't vary
-        cursimdict = copy.deepcopy(paramvalues)
+        cursimdict = paramvalues.copy()
         # go through the coordinates and get all of them.
         for iname, ival in coorddict.items():
             curdims = ds[iname].dims

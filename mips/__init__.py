@@ -4,6 +4,7 @@ from .isr_performance import (
     simple_array,
     iri2016py,
     iri2016,
+    sweep_iri_along_beam,
     is_bandwidth_estimate,
     is_calculate_spectrum,
     is_calculate_plasma_parameter_errors,
