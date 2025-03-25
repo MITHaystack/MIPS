@@ -291,7 +291,7 @@ def isr_map_plot(
                 )
         # plt.clabel(cs, fontsize=9, inline=1,  fmt="%1.0f km")
 
-        plt.title(title+"\n"+ptype)
+        plt.title(title + "\n" + ptype)
         if annotate:
             plt.annotate(
                 annotation,
