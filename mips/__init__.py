@@ -11,7 +11,7 @@ from .isr_performance import (
     is_snr,
 )
 
-from .configtools import read_config_yaml
+from .configtools import read_config_yaml, get_radars
 from .isr_sim_array import simulate_data
 from .isr_mapper import map_radar_array
 from . import _version

@@ -158,21 +158,21 @@ def isr_map_plot(
             log_scale = False
             if mp == "dNe":
                 dval_mat = map_info["dNe_tot"].values
-                ptype = "Electron density error $\mathrm{stddev}(Ne) (%%)$"
+                ptype = r"Electron density error $\sigma(Ne) (m^{-3})$"
                 extstr = "_dNe"
                 map_final_fname = mfn_split[0] + "_dNe." + mfn_split[1]
             elif mp == "dTi":
                 dval_mat = map_info["dTi_tot"].values
-                ptype = "Ion temperature error $\mathrm{stddev}(Ti) (K)$"
+                ptype = r"Ion temperature error $\mathrm{stddev}(Ti) (K)$"
                 extstr = "_dTi"
             elif mp == "dTe":
                 dval_mat = map_info["dTe_tot"].values
                 extstr = "_dTe"
-                ptype = "Electron temperature error $\mathrm{stddev}(Te) (K)$"
+                ptype = r"Electron temperature error $\mathrm{stddev}(Te) (K)$"
 
             elif mp == "dV":
                 dval_mat = map_info["dV_tot"].values
-                ptype = "Velocity error $\mathrm{stddev}(V) (m/s)$"
+                ptype = r"Velocity error $\mathrm{stddev}(V) (m/s)$"
                 extstr = "_dV"
 
             elif mp == "gamma":
@@ -291,7 +291,7 @@ def isr_map_plot(
                 )
         # plt.clabel(cs, fontsize=9, inline=1,  fmt="%1.0f km")
 
-        plt.title("%s\n%s" % (title, ptype))
+        plt.title(title+"\n"+ptype)
         if annotate:
             plt.annotate(
                 annotation,
