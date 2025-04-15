@@ -22,7 +22,11 @@ import madrigalWeb.madrigalWeb
 import ISRSpectrum
 import iri2016.base as iri2016_base  # pip install - written by Michael Hirsch; avoiding name conflict with old method
 
-from .coord import geographic_to_cartesian, antenna_to_cartesian, cartesian_to_geographic
+from .coord import (
+    geographic_to_cartesian,
+    antenna_to_cartesian,
+    cartesian_to_geographic,
+)
 
 version_str = "MIPS V2.2.1"
 
@@ -250,7 +254,6 @@ def iri2016py(dt, gdlat, gdlon, gdalt_start, gdalt_end, gdalt_step):
 
 
 def iri2016(dt, gdlat, gdlon, gdalt_start, gdalt_end, gdalt_step):
-
     """
     Return the IRI-2016 model output for the specified 4D coordinates
     through a call to the CCMC web interface.
@@ -451,30 +454,44 @@ def speccheck(ion_species, pfunc=print):
     return allgood
 
 
-def sweep_iri_along_beam(dt, latitude, longitude, altitude, az_dir, el_dir, start_range, end_range, delta_range):
-    """ Sweep the IRI model along a radar beam and compute the model outputs.
+def sweep_iri_along_beam(
+    dt,
+    latitude,
+    longitude,
+    altitude,
+    az_dir,
+    el_dir,
+    start_range,
+    end_range,
+    delta_range,
+):
+    """Sweep the IRI model along a radar beam and compute the model outputs.
 
-        dt, datetime for the model run time
-        latitude, radar latitude
-        longitude, radar longitude
-        altitude, radar altitude
-        az_dir, radar pointing direction in azimuth
-        el_dir, radar pointing direction in elevation angle
-        start_range, range along beam to start sweep in km
-        end_range, range along beam to end sweep in km
-        delta_range, range step in km
+    dt, datetime for the model run time
+    latitude, radar latitude
+    longitude, radar longitude
+    altitude, radar altitude
+    az_dir, radar pointing direction in azimuth
+    el_dir, radar pointing direction in elevation angle
+    start_range, range along beam to start sweep in km
+    end_range, range along beam to end sweep in km
+    delta_range, range step in km
 
-        return xarray model evaluation versus range with latitude, longitude, and altitude evaluated
+    return xarray model evaluation versus range with latitude, longitude, and altitude evaluated
 
     """
 
     # convert to ECF (x,y,z) start point
-    radar_x, radar_y = geographic_to_cartesian(longitude, latitude, {'lon_0':longitude,'lat_0':latitude,'proj':'pyart_aeqd'})
-    radar_z = altitude # in meters
+    radar_x, radar_y = geographic_to_cartesian(
+        longitude,
+        latitude,
+        {"lon_0": longitude, "lat_0": latitude, "proj": "pyart_aeqd"},
+    )
+    radar_z = altitude  # in meters
     # compute cartesian coordinates
     ranges = np.arange(start_range, end_range, delta_range)
     # ranges are in km
-    beam_x, beam_y, beam_z = antenna_to_cartesian(ranges/1000.0, az_dir, el_dir)
+    beam_x, beam_y, beam_z = antenna_to_cartesian(ranges / 1000.0, az_dir, el_dir)
     # note result is in meters
 
     # offset to ECF
@@ -483,19 +500,21 @@ def sweep_iri_along_beam(dt, latitude, longitude, altitude, az_dir, el_dir, star
     sweep_z = radar_z + beam_z
 
     # convert ECF to geodetic lat, lon, alt
-    sweep_lon, sweep_lat = cartesian_to_geographic(sweep_x, sweep_y, {'lon_0':longitude,'lat_0':latitude,'proj':'pyart_aeqd'})
+    sweep_lon, sweep_lat = cartesian_to_geographic(
+        sweep_x, sweep_y, {"lon_0": longitude, "lat_0": latitude, "proj": "pyart_aeqd"}
+    )
     sweep_alt = sweep_z
 
-    #print(sweep_lat)
-    #print(sweep_lon)
-    #print(ranges)
-    #print(sweep_alt)
+    # print(sweep_lat)
+    # print(sweep_lon)
+    # print(ranges)
+    # print(sweep_alt)
 
     # Sweep IRI model in altitude along beam locations
     ionosphere = None
     for idx, alt in enumerate(sweep_alt):
-        iri = iri2016py(dt,sweep_lat[idx],sweep_lon[idx],alt/1e3,alt/1e3,1.0)
-        #print(iri)
+        iri = iri2016py(dt, sweep_lat[idx], sweep_lon[idx], alt / 1e3, alt / 1e3, 1.0)
+        # print(iri)
         if ionosphere is None:
             ionosphere = iri
         else:
@@ -515,9 +534,8 @@ def is_bandwidth_estimate(
     maximum_bulk_doppler,
     bandwidth_factor,
     quick_estimate_mode=True,
-    pfunc=print
+    pfunc=print,
 ):
-
     """
     is_bandwidth_estimate() calculates an estimate of the incoherent scatter spectral bandwidth including bulk Doppler effects.
 
@@ -559,7 +577,9 @@ def is_bandwidth_estimate(
     # sanity checks
     assert (np.array(ion_fraction) >= 0.0).all(), "Can't have negative ion fractions."
     assert ISRSpectrum.ioncheck(ion_species), "Invalid ion species"
-    assert sum(ion_fraction) < 1.1 and sum(ion_fraction) > 0.9, "Ion fractions must equal 1."
+    assert (
+        sum(ion_fraction) < 1.1 and sum(ion_fraction) > 0.9
+    ), "Ion fractions must equal 1."
 
     # Estimate from first principles without an actual IS theoretical calculation.
 
@@ -622,10 +642,12 @@ def is_bandwidth_estimate(
 
         except:
 
-            #raise ValueError(
+            # raise ValueError(
             #    "Could not find bandwidth in realistic spectral case.  Try increasing sampling frequency."
-            #)
-            pfunc("Could not find bandwidth in realistic spectral case. Default to simple spectral case.")
+            # )
+            pfunc(
+                "Could not find bandwidth in realistic spectral case. Default to simple spectral case."
+            )
 
     # common calculations regardless of mode
 
@@ -639,7 +661,9 @@ def is_bandwidth_estimate(
     return (line_shift, bandwidth, h_lambda_inv)
 
 
-def is_calculate_spectrum(velocity_ms, frequency_Hz, Ti, Te, Ne, ion_species, ion_fraction):
+def is_calculate_spectrum(
+    velocity_ms, frequency_Hz, Ti, Te, Ne, ion_species, ion_fraction
+):
     """
     is spectrum to obtain linearized errors
 
@@ -836,7 +860,6 @@ def is_snr(
     mtime_estimate_method,
     pfunc=print,
 ):
-
     """SNR estimation equation
 
     Parameters
@@ -981,7 +1004,6 @@ def is_snr(
     # range resolution is determined by baud length
     range_resolution_m = sc.c / 2.0 * baud_length_s
 
-
     # baud_gain for measurement time
     # J. Stamm, J. Vierinen, J. M. Urco, B. Gustavsson, and J. L. Chau, “Radar imaging with EISCAT 3D,” Annales Geophysicae, vol. 39, no. 1, pp. 119–134, Feb. 2021, doi: 10.5194/angeo-39-119-2021.
     # Note this is likely only true for voltage domain codes. Power domain codes take multiple cycles per measurement.
@@ -992,7 +1014,7 @@ def is_snr(
     if n_bauds < 2:
         baud_gain = 1
     else:
-        #baud_gain = n_bauds * (n_bauds - 1) / 2.0
+        # baud_gain = n_bauds * (n_bauds - 1) / 2.0
         baud_gain = 1
 
     # handle mis-matched beams
@@ -1027,8 +1049,6 @@ def is_snr(
         # wider TX beam than RX is just diluted by the volume above but collects no extra noise
         noise_scaling = 1.0
 
-
-
     # fundamental electron radius and scattering cross-section
     electron_radius = sc.e**2.0 * sc.mu_0 / (4.0 * sc.pi * sc.m_e)
 
@@ -1047,10 +1067,7 @@ def is_snr(
 
     # Peak power aperture to temperature ratio, MW m^2 / K
     power_aperture_to_temperature = (
-        peak_power_W
-        * gain_tx
-        * wavelength**2
-        / (4 * sc.pi * 1e6 * system_temperature)
+        peak_power_W * gain_tx * wavelength**2 / (4 * sc.pi * 1e6 * system_temperature)
     )
     # Average power aperture to temperature ratio, MW m^2 / K
     avg_power_aperture_to_temperature = duty_cycle * power_aperture_to_temperature
@@ -1069,8 +1086,6 @@ def is_snr(
         - (1.0 + alpha**2.0) ** (-1.0)
         + ((1.0 + alpha**2.0) * (1.0 + alpha**2.0 + Te / Ti)) ** -1.0
     )
-
-
 
     if np.min(wavelength_to_debye_length_ratio) < 1.0:
         wdval = np.min(wavelength_to_debye_length_ratio)
@@ -1117,10 +1132,10 @@ def is_snr(
 
     # HACK bistatic depolarization needs to be treated to deal with different types of polariation. Probably the best way is to do a scattering matrix.
     # bistatic depolarization, assuming vertical transmit polarization
-    #polarization_loss = 1.0 - np.sin(sc.pi * tx_target_rx_angle / 180.0) ** 2.0
-    #polarization_loss = 1.0
+    # polarization_loss = 1.0 - np.sin(sc.pi * tx_target_rx_angle / 180.0) ** 2.0
+    # polarization_loss = 1.0
     # circular polarization case
-    polarization_loss = 1.0 -  0.5*(np.sin(np.deg2rad(tx_target_rx_angle)))**2.0
+    polarization_loss = 1.0 - 0.5 * (np.sin(np.deg2rad(tx_target_rx_angle))) ** 2.0
 
     # radar cross section
     rcs = polarization_loss * unit_xsection * Ne * volume
@@ -1143,7 +1158,6 @@ def is_snr(
     )
     n = sc.k * system_temperature * bandwidth
     snr = s / n
-
 
     # compute the number of independent samples for the integration time
     # we are going to neglect increases in estimation speed from
@@ -1222,7 +1236,7 @@ def is_snr(
             )
 
     # debug printout for sanity checks
-    #if tx_to_target_range_m > 500.0E3 and tx_to_target_range_m < 650.0E3 and tx_target_rx_angle > 44.0 and tx_target_rx_angle < 46.0:
+    # if tx_to_target_range_m > 500.0E3 and tx_to_target_range_m < 650.0E3 and tx_target_rx_angle > 44.0 and tx_target_rx_angle < 46.0:
     #    print("\nrange_resolution_m ", range_resolution_m)
     #    print("tx range ", tx_to_target_range_m)
     #    print("tx to rx angle ", tx_target_rx_angle)
