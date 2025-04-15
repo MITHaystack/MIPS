@@ -1067,7 +1067,10 @@ def is_snr(
 
     # Peak power aperture to temperature ratio, MW m^2 / K
     power_aperture_to_temperature = (
-        peak_power_W * gain_tx * wavelength**2 / (4 * sc.pi * 1e6 * system_temperature)
+        peak_power_W
+        * gain_tx
+        * wavelength**2
+        / (4 * sc.pi * 1e6 * system_temperature)
     )
     # Average power aperture to temperature ratio, MW m^2 / K
     avg_power_aperture_to_temperature = duty_cycle * power_aperture_to_temperature
