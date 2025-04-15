@@ -999,14 +999,14 @@ def is_snr(
     if rad_tx_beamwidth <= rad_rx_beamwidth:
 
         # Illuminated volume (approximation from Peebles, 5.7-19)
-        # if we are modeling a bi-static path, include a penalty factor for mismatched volumes
+        # if we are modeling a bi-static path, include a penalty factor for mismatched volumes in the bistatic_volume_factor term.
         volume = (
             bistatic_volume_factor
             * math.pi
             * tx_to_target_range_m**2
             * rad_tx_beamwidth**2
             * range_resolution_m
-            / (16.0 * math.log(2.0)*(np.cos(np.deg2rad(tx_target_rx_angle)))**2.0)
+            / (16.0 * math.log(2.0))
         )
 
         # wider RX beam will increase noise collected relative to signal, lowering SNR
@@ -1014,14 +1014,14 @@ def is_snr(
 
     else:
         # Illuminated volume (approximation from Peebles, 5.7-19)
-        # if we are modeling a bi-static path, include a penalty factor for mismatched volumes
+        # if we are modeling a bi-static path, include a penalty factor for mismatched volumes in the bistatic_volume_factor term.
         volume = (
             bistatic_volume_factor
             * math.pi
             * tx_to_target_range_m**2
             * rad_rx_beamwidth**2
             * range_resolution_m
-            / (16.0 * math.log(2.0)*(np.cos(np.deg2rad(tx_target_rx_angle)))**2.0)
+            / (16.0 * math.log(2.0))
         )
 
         # wider TX beam than RX is just diluted by the volume above but collects no extra noise
